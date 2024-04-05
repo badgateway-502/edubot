@@ -18,6 +18,7 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
         await message.answer_document(cur_lecture['pdf_id'], reply_markup=keyboard_for_lecture())
     if 'text' in cur_lecture.keys():
         await message.answer(cur_lecture['text'], reply_markup=keyboard_for_lecture())
+    await message.answer('\nВремя на тест не ограничено, количество попыток не ограничено', reply_markup=keyboard_for_lecture())
 
     await state.set_state(SubjectState.current_lecture)
 
@@ -49,7 +50,7 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
 
         await state.set_state(SubjectState.old_lecture)
     except ValueError as e:
-        await message.answer(f'{e}', reply_markup=keyboard_for_lecture())
+        await message.answer(f'{e}')
 
 
 @subject_router.message(SubjectState.choosing_lecture)

@@ -33,7 +33,8 @@ def keyboard_for_lecture():
     kb = [
         [types.KeyboardButton(text="В меню"),
          types.KeyboardButton(text="К списку предметов"),
-         types.KeyboardButton(text="Список всех доступных лекций")],
+         types.KeyboardButton(text="Список всех доступных лекций"),
+         types.KeyboardButton(text="Пройти тест")],
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     return keyboard

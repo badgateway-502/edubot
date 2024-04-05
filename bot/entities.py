@@ -8,11 +8,3 @@ class Student:
     name: str
     surname: str
     academic_performance: Dict[str, str]
-
-    def get_info(self) -> dict:
-        return {
-            'id': self.id,
-            'name': self.name,
-            'surname': self.surname,
-            'academic_performance': self.academic_performance
-        }
