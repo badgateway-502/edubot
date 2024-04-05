@@ -27,7 +27,10 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
     text = await get_info_about_subject_db(message.from_user.id)
     await message.reply(text, reply_markup=keyboard_go_to_menu())
     await state.set_state(SubjectState.choosing_subject)
-    await state.set_data({})
+    state_data = await state.get_data()
+    if 'subject_id' in state_data.keys():
+        del state_data['subject_id']
+        await state.set_data(state_data)
 
 
 @subjects_router.message(SubjectState.choosing_subject, F.text.isdigit())
