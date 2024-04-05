@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["saladware <saladware46@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["all"], version = "^0.110.0"}
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.29"}
+aiosqlite = "^0.20.0"
+alembic = "^1.13.1"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+types-passlib = "^1.7.7.20240327"
+pylint = "^3.1.0"
+pytest = "^8.1.1"
+pytest-asyncio = "^0.23.6"
+faker = "^24.4.0"
+ruff = "^0.3.4"
+types-python-jose = "^3.3.4.20240106"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+asyncio_mode = "auto"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
