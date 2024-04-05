@@ -20,12 +20,11 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
         await message.answer(cur_lecture['text'], reply_markup=keyboard_for_lecture())
     await message.answer('\nВремя на тест не ограничено, количество попыток не ограничено', reply_markup=keyboard_for_lecture())
 
-    await state.set_state(SubjectState.current_lecture)
+    await state.set_state(SubjectState.lecture_opened)
 
 
 @subject_router.message(SubjectState.chosen_subject, F.text == "Список всех доступных лекций")
-@subject_router.message(SubjectState.current_lecture, F.text == "Список всех доступных лекций")
-@subject_router.message(SubjectState.old_lecture, F.text == "Список всех доступных лекций")
+@subject_router.message(SubjectState.lecture_opened, F.text == "Список всех доступных лекций")
 async def my_subjects_button(message: types.Message, state: FSMContext):
     lecture_list = await future_api.get_lectures_all_db(message.from_user.id, (await state.get_data())['subject_id'])
     text = 'Доступные лекции: '
@@ -48,7 +47,7 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
         if 'text' in cur_lecture.keys():
             await message.answer(cur_lecture['text'], reply_markup=keyboard_for_lecture())
 
-        await state.set_state(SubjectState.old_lecture)
+        await state.set_state(SubjectState.lecture_opened)
     except ValueError as e:
         await message.answer(f'{e}')
 

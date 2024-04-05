@@ -19,9 +19,8 @@ async def get_info_about_subject_db(user_id: int) -> str:
 
 
 @subjects_router.message(SubjectState.chosen_subject, F.text == 'К списку предметов')
-@subjects_router.message(SubjectState.current_lecture, F.text == 'К списку предметов')
+@subjects_router.message(SubjectState.lecture_opened, F.text == 'К списку предметов')
 @subjects_router.message(SubjectState.choosing_lecture, F.text == 'К списку предметов')
-@subjects_router.message(SubjectState.old_lecture, F.text == 'К списку предметов')
 @subjects_router.message(AFKState.logged, F.text == "Мои предметы 🥐")
 async def my_subjects_button(message: types.Message, state: FSMContext):
     text = await get_info_about_subject_db(message.from_user.id)

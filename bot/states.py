@@ -12,6 +12,5 @@ class SignInState(StatesGroup):
 class SubjectState(StatesGroup):
     choosing_subject = State()
     chosen_subject = State()
-    current_lecture = State()
+    lecture_opened = State()
     choosing_lecture = State()
-    old_lecture = State()
