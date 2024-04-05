@@ -7,3 +7,7 @@ class AFKState(StatesGroup):
 
 class SignInState(StatesGroup):
     signing_in = State()
+
+class Subject(StatesGroup):
+    choosing_subject = State()
+    chosen_subject = State()
