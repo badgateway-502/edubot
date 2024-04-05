@@ -13,6 +13,7 @@ async def main():
     dp.include_routers(routers.menu_router)
     dp.include_routers(routers.profile_router)
     dp.include_routers(routers.subjects_router)
+    dp.include_routers(routers.subject_router)
     dp.include_routers(routers.start_router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

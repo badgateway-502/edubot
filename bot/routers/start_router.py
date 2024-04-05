@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 
 from bot import future_api, validate
-from bot.main import keyboard_for_menu
+from bot.keyboards import keyboard_for_menu
 from bot.states import AFKState, SignInState
 
 start_router = Router()
@@ -17,6 +17,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     else:
         await message.answer("Пожалуйста, зарегестрируйтесь. Введите ваше имя и фамилию.")
         await state.set_state(SignInState.signing_in)
+
 
 @start_router.message(SignInState.signing_in)
 async def signing_in(message: types.Message, state: FSMContext):

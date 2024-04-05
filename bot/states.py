@@ -8,6 +8,10 @@ class AFKState(StatesGroup):
 class SignInState(StatesGroup):
     signing_in = State()
 
-class Subject(StatesGroup):
+
+class SubjectState(StatesGroup):
     choosing_subject = State()
     chosen_subject = State()
+    current_lecture = State()
+    choosing_lecture = State()
+    old_lecture = State()
