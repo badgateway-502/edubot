@@ -4,7 +4,7 @@ from api.students.exceptions import (
 )
 from .repositories import BaseStudentsRepository
 from .models import Student
-
+from ..teachers.models import Teacher
 
 class StudentsService:
     def __init__(self, students_repo: BaseStudentsRepository):
@@ -23,3 +23,9 @@ class StudentsService:
         student = Student(id=id, firstname=firstname, lastname=lastname)
         await self.students_repo.add(student)
         return student
+
+    async def get_all_students(self) -> list[Student]:
+        return await self.students_repo.get_all()
+    
+    async def remove_student(self, student: Student, _by: Teacher):
+        await self.students_repo.remove(student)
