@@ -4,7 +4,7 @@ from typing import Literal
 from api.subjects.exceptions import TelegramException
 from fastapi import APIRouter, HTTPException, UploadFile, status
 
-from .schemas import CreateLecture, LectureSchema, SubjectSchema, CreateSubject, SubjectUpdate
+from .schemas import CreateLecture, LectureSchema, SubjectSchema, CreateSubject, SubjectUpdate, UpdateLecture
 from ..teachers.dependencies import Me
 from .dependencies import CurrentSubject, Subjects, Lectures
 
@@ -73,3 +73,17 @@ async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, fil
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
     return lecture
+
+
+@subjects.patch("/{subject_id}/lectures/{number}/upload-video", response_model=LectureSchema)
+async def update_lecture(data: UpdateLecture, subject: CurrentSubject, number: int, service: Lectures):
+    lecture = await service.get_lecture_by_number(subject, number)
+    await service.update_lecture(lecture, data.title, data.text_description)
+    return lecture
+
+
+@subjects.delete("/{subject_id}/lectures/{number}/upload-video", response_model=Literal["done"])
+async def remove_lecture(subject: CurrentSubject, number: int, service: Lectures):
+    lecture = await service.get_lecture_by_number(subject, number)
+    await service.remove_lecture(lecture)
+    return "done"

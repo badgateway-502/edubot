@@ -25,6 +25,11 @@ class CreateLecture(BaseModel):
     text_description: str | None = None
 
 
+class UpdateLecture(BaseModel):
+    title: str | None = None
+    text_description: str | None = None
+
+
 class LectureSchema(BaseModel):
     model_config = {"from_attributes": True}
 

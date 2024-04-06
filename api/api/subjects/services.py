@@ -3,6 +3,8 @@ from typing import BinaryIO
 from httpx import AsyncClient
 
 from datetime import date
+
+from pydantic import NonNegativeFloat
 from .exceptions import (
     LectureAlreadyExistsException,
     LectureNotFoundException,
@@ -112,4 +114,17 @@ class LecturesService:
     async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO):
         file_id = await self.telegram_service.get_tg_file_id(file)
         lecture.video_file_id = file_id
+        await self.lectures_repo.add(lecture)
+    
+    async def remove_lecture(self, lecture: Lecture):
+        await self.lectures_repo.remove(lecture)
+
+    async def update_lecture(self, lecture: Lecture, title: str | None = None, text_description: str | None = None):
+        if title is not None:
+            l = await self.lectures_repo.get_by_title(lecture.subject_id, title)
+            if l is not None:
+                raise LectureAlreadyExistsException(title=title)
+            lecture.title = title
+        if text_description is not None:
+            lecture.text_description = text_description
         await self.lectures_repo.add(lecture)
