@@ -1,3 +1,7 @@
+from abc import ABC, abstractmethod
+from typing import BinaryIO
+from httpx import AsyncClient
+
 from datetime import date
 from .exceptions import (
     LectureAlreadyExistsException,
@@ -5,10 +9,32 @@ from .exceptions import (
     SubjectAccessException,
     SubjectAlreadyExistsException,
     SubjectNotFoundException,
+    TelegramException,
 )
 from .models import Lecture, Subject
 from .repositories import BaseSubjectsRepository, BaseLecturesRepository
 from ..teachers.models import Teacher
+
+
+class BaseTelegramService(ABC):
+    @abstractmethod
+    async def get_tg_file_id(self, fp: BinaryIO) -> str:
+        raise NotImplementedError
+
+
+class HttpxTelegramService(BaseTelegramService):
+    def __init__(self, bot_token: str, chat_id: str) -> None:
+        self.bot_token = bot_token
+        self.chat_id = chat_id
+    
+    async def get_tg_file_id(self, fp: BinaryIO) -> str:
+        async with AsyncClient() as client:
+            file = {"document": fp}
+            res = await client.post(f"https://api.telegram.org/bot{self.bot_token}/sendDocument?chat_id={self.chat_id}", files=file)
+            if res.status_code == 200:
+                return res.json()["result"]["document"]["file_id"]
+            else:
+                raise TelegramException(res.json())
 
 
 class SubjectsService:
@@ -51,8 +77,9 @@ class SubjectsService:
 
 
 class LecturesService:
-    def __init__(self, lectures_repo: BaseLecturesRepository) -> None:
+    def __init__(self, lectures_repo: BaseLecturesRepository, telegram_service: BaseTelegramService) -> None:
         self.lectures_repo = lectures_repo
+        self.telegram_service = telegram_service
 
     async def create_new_lecture(
         self, subject: Subject, title: str, text_description: str | None
@@ -76,3 +103,13 @@ class LecturesService:
         if lecture is None:
             raise LectureNotFoundException(subject=subject.name, number=str(number))
         return lecture
+    
+    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO):
+        file_id = await self.telegram_service.get_tg_file_id(file)
+        lecture.description_file_id = file_id
+        await self.lectures_repo.add(lecture)
+
+    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO):
+        file_id = await self.telegram_service.get_tg_file_id(file)
+        lecture.video_file_id = file_id
+        await self.lectures_repo.add(lecture)

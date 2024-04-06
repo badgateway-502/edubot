@@ -1,10 +1,11 @@
 from typing import Annotated
 
+from api.config import Settings, get_settings
 from api.subjects.exceptions import SubjectNotFoundException
 from api.subjects.models import Subject
 
 from .repositories import SqlalchemySubjectsRepository, SqlalchemyLecturesRepository
-from .services import LecturesService, SubjectsService
+from .services import HttpxTelegramService, LecturesService, SubjectsService
 from ..database import get_database_session
 
 from fastapi import Depends, HTTPException, status
@@ -33,8 +34,11 @@ async def get_current_subject(subject_id: int, service: Subjects) -> Subject:
 CurrentSubject = Annotated[Subject, Depends(get_current_subject)]
 
 
-async def get_lectures_service(session: Session) -> LecturesService:
-    return LecturesService(lectures_repo=SqlalchemyLecturesRepository(session))
+async def get_lectures_service(session: Session, settings: Annotated[Settings, Depends(get_settings)]) -> LecturesService:
+    return LecturesService(
+        lectures_repo=SqlalchemyLecturesRepository(session),
+        telegram_service=HttpxTelegramService(bot_token=settings.bot_token, chat_id=settings.tg_storage_chat_id)
+        )
 
 
 Lectures = Annotated[LecturesService, Depends(get_lectures_service)]

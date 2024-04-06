@@ -30,6 +30,7 @@ class LectureSchema(BaseModel):
 
     id: int
     subject_id: int
+    number: int
     title: str
     text_description: str | None
     description_file_id: str | None

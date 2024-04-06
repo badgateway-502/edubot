@@ -1,7 +1,8 @@
 from typing import Literal
 
 
-from fastapi import APIRouter
+from api.subjects.exceptions import TelegramException
+from fastapi import APIRouter, HTTPException, UploadFile, status
 
 from .schemas import CreateLecture, LectureSchema, SubjectSchema, CreateSubject, SubjectUpdate
 from ..teachers.dependencies import Me
@@ -52,3 +53,23 @@ async def get_lecture_by_number(subject: CurrentSubject, number: int,  service: 
 @subjects.post("/{subject_id}/lectures/", tags=["lectures"], response_model=LectureSchema)
 async def create_new_lecture(data: CreateLecture, subject: CurrentSubject, service: Lectures):
     return await service.create_new_lecture(subject, data.title, data.text_description)
+
+
+@subjects.post("/{subject_id}/lectures/{number}/upload-description", response_model=LectureSchema)
+async def upload_description_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
+    lecture = await service.get_lecture_by_number(subject=subject, number=number)
+    try:
+        await service.add_description_file_to_lecture(lecture=lecture, file=file.file)
+    except TelegramException as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
+    return lecture
+
+
+@subjects.post("/{subject_id}/lectures/{number}/upload-description", response_model=LectureSchema)
+async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
+    lecture = await service.get_lecture_by_number(subject=subject, number=number)
+    try:
+        await service.add_video_file_to_lecture(lecture=lecture, file=file.file)
+    except TelegramException as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
+    return lecture

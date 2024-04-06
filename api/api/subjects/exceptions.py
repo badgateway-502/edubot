@@ -6,6 +6,10 @@ from ..exceptions import (
 )
 
 
+class TelegramException(Exception):
+    pass
+
+
 class SubjectException(ItemException):
     item = "subject"
 

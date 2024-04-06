@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     access_token_algorithm: str = "HS256"
     access_token_expires_minutes: int = 60
     bot_token: str
+    tg_storage_chat_id: str
 
 
 @lru_cache
