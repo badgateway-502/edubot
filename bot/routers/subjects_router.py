@@ -1,6 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.formatting import Text, Bold
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot import future_api
 from bot.keyboards import keyboard_go_to_menu, keyboard_for_subject
@@ -9,22 +11,26 @@ from bot.states import AFKState, SubjectState
 subjects_router = Router()
 
 
-async def get_info_about_subject_db(user_id: int) -> str:
-    subjects = await future_api.get_info_about_subject_db(user_id)
-    text = 'Доступные предметы: '
-    for subject in subjects:
-        text += f'\n {subject[0]} {subject[1]}'
-    text += '\n\n чтобы просмотреть предмет, пожалуйста выберите его номер'
-    return text
-
-
 @subjects_router.message(SubjectState.chosen_subject, F.text == 'К списку предметов')
 @subjects_router.message(SubjectState.lecture_opened, F.text == 'К списку предметов')
 @subjects_router.message(SubjectState.choosing_lecture, F.text == 'К списку предметов')
 @subjects_router.message(AFKState.logged, F.text == "Мои предметы 🥐")
 async def my_subjects_button(message: types.Message, state: FSMContext):
-    text = await get_info_about_subject_db(message.from_user.id)
-    await message.reply(text, reply_markup=keyboard_go_to_menu())
+    subjects = await future_api.get_info_about_subject_db(message.from_user.id)
+    keyboard = [[]]
+    for subject in subjects:
+        if len(keyboard[-1]) < 2:
+            keyboard[-1].append(types.InlineKeyboardButton(
+                text=f"{subject[1]}",
+                callback_data=f"{subject[0]}")
+            )
+        else:
+            keyboard.append([types.InlineKeyboardButton(
+                text=f"{subject[1]}",
+                callback_data=f"{subject[0]}")]
+            )
+    builder = InlineKeyboardMarkup(inline_keyboard=keyboard)
+    await message.reply('Доступные предметы: ', reply_markup=builder)
     await state.set_state(SubjectState.choosing_subject)
     state_data = await state.get_data()
     if 'subject_id' in state_data.keys():
