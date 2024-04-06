@@ -1,4 +1,7 @@
-from api.students.exceptions import StudentAlreadyExistsException, StudentNotFoundException
+from api.students.exceptions import (
+    StudentAlreadyExistsException,
+    StudentNotFoundException,
+)
 from .dependencies import Students
 from fastapi import APIRouter, HTTPException, status
 

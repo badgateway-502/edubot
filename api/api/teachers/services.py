@@ -114,6 +114,10 @@ class TeacherService:
         firstname: str | None = None,
         lastname: str | None = None,
     ):
+        if email is not None:
+            t = await self.repo.get_by_email(email)
+            if t is not None:
+                raise TeacherAlreadyExistsException
         data = {
             "firstname": firstname,
             "lastname": lastname,
