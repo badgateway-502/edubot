@@ -65,7 +65,7 @@ async def upload_description_file_to_lecture(subject: CurrentSubject, number: in
     return lecture
 
 
-@subjects.post("/{subject_id}/lectures/{number}/upload-description", response_model=LectureSchema)
+@subjects.post("/{subject_id}/lectures/{number}/upload-video", response_model=LectureSchema)
 async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
