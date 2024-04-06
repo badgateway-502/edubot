@@ -1,9 +1,12 @@
-from ..exceptions import ItemAlreadyExistsException, ItemNotFoundException
+from ..exceptions import ItemAlreadyExistsException, ItemException, ItemNotFoundException
 
 
-class StudentNotFoundException(ItemNotFoundException):
+class StudentException(ItemException):
     item = "student"
 
+class StudentNotFoundException(StudentException, ItemNotFoundException):
+    pass
 
-class StudentAlreadyExistsException(ItemAlreadyExistsException):
-    item = "student"
+
+class StudentAlreadyExistsException(StudentException, ItemAlreadyExistsException):
+    pass

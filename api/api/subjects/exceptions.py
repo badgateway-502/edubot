@@ -1,14 +1,34 @@
-from ..exceptions import ItemAlreadyExistsException, ItemNotFoundException
+from ..exceptions import (
+    ItemAlreadyExistsException,
+    ItemException,
+    ItemNotFoundException,
+    ItemAccessDeniedException,
+)
 
 
-class SubjectAlreadyExistsException(ItemAlreadyExistsException):
+class SubjectException(ItemException):
     item = "subject"
 
 
-class SubjectNotFoundException(ItemNotFoundException):
-    item = "subject"
+class LectureException(ItemException):
+    item = "lecture"
 
 
-class SubjectAccessException(Exception):
-    def __init__(self, message: str = "Access denied") -> None:
-        self.message = message
+class SubjectAlreadyExistsException(SubjectException, ItemAlreadyExistsException):
+    pass
+
+
+class SubjectNotFoundException(SubjectException, ItemNotFoundException):
+    pass
+
+
+class SubjectAccessException(SubjectException, ItemAccessDeniedException):
+    pass
+
+
+class LectureAlreadyExistsException(LectureException, ItemAlreadyExistsException):
+    pass
+
+
+class LectureNotFoundException(LectureException, ItemNotFoundException):
+    pass

@@ -25,4 +25,4 @@ async def get_database_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    ...
+    """base class for all sqlalchemy orm models"""

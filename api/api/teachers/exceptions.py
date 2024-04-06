@@ -1,8 +1,4 @@
-from ..exceptions import ItemAlreadyExistsException, ItemNotFoundException
-
-
-class TeacherNotFoundException(ItemNotFoundException):
-    item = "teacher"
+from ..exceptions import ItemException, ItemNotFoundException, ItemAlreadyExistsException
 
 
 class AuthenticationException(Exception):
@@ -10,5 +6,12 @@ class AuthenticationException(Exception):
         self.message = message
 
 
-class TeacherAlreadyExistsException(ItemAlreadyExistsException):
-    item = "teacher"
+class TeacherException(ItemException):
+    item = "tacher"
+
+class TeacherNotFoundException(TeacherException, ItemNotFoundException):
+    pass
+
+
+class TeacherAlreadyExistsException(TeacherException, ItemAlreadyExistsException):
+    pass

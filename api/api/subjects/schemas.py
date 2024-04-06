@@ -1,3 +1,4 @@
+from datetime import date
 from pydantic import BaseModel
 from ..teachers.schemas import TeacherPublic
 
@@ -16,3 +17,20 @@ class SubjectSchema(BaseModel):
 
 class SubjectUpdate(BaseModel):
     name: str | None = None
+
+
+class CreateLecture(BaseModel):
+    title: str
+    text_description: str | None = None
+
+
+class LectureSchema(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    subject_id: int
+    title: str
+    text_description: str | None
+    description_file_id: str | None
+    video_file_id: str | None
+    created_at: date
