@@ -12,6 +12,7 @@ class SubjectSchema(BaseModel):
 
     id: int
     name: str
+    lectures: list["LectureSchema"]
     teacher: TeacherPublic
 
 

@@ -29,7 +29,7 @@ class SubjectsService:
     async def get_subject_by_id(self, subject_id: int) -> Subject:
         subject = await self.subjects_repo.get_by_id(subject_id)
         if subject is None:
-            raise SubjectNotFoundException
+            raise SubjectNotFoundException(id=str(subject_id))
         return subject
 
     async def update_subject(
@@ -62,8 +62,9 @@ class LecturesService:
         )
         if lecture is not None:
             raise LectureAlreadyExistsException(subject=subject.name, title=title)
+        max_number = await self.lectures_repo.get_max_number(subject_id=subject.id) or 0
         lecture = Lecture(
-            subject_id=subject.id, title=title, text_description=text_description, created_at=date.today()
+            subject_id=subject.id, title=title, text_description=text_description, created_at=date.today(), number=max_number+1
         )
         await self.lectures_repo.add(lecture)
         return lecture

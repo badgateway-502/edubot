@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 
 
 class TeacherCreate(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     firstname: str
     lastname: str
@@ -12,7 +12,7 @@ class TeacherPrivate(BaseModel):
     model_config = {"from_attributes": True}
 
     id: int
-    email: EmailStr
+    email: str
     firstname: str
     lastname: str
 

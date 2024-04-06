@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Lecture, Subject
@@ -83,6 +83,10 @@ class BaseLecturesRepository(ABC):
     @abstractmethod
     async def get_by_number(self, subject_id: int, number: int) -> Lecture | None:
         raise NotImplementedError
+    
+    @abstractmethod
+    async def get_max_number(self, subject_id: int) -> int | None:
+        raise NotImplementedError
 
     @abstractmethod
     async def get_by_title(self, subject_id: int, title: str) -> Lecture | None:
@@ -147,3 +151,10 @@ class SqlalchemyLecturesRepository(BaseLecturesRepository):
     async def remove(self, lecture: Lecture) -> None:
         await self.session.delete(lecture)
         await self.session.commit()
+    
+    async def get_max_number(self, subject_id: int) -> int | None:
+        query = select(func.max(Lecture.number)).where(Lecture.subject_id == subject_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+        

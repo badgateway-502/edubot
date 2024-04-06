@@ -13,7 +13,7 @@ async def get_student(student_id: int, service: Students):
 
 
 
-@students.post("/")
+@students.post("/", response_model=StudentSchema)
 async def add_new_student(data: StudentSchema, service: Students):
     return await service.add_new_student(**data.model_dump())
 

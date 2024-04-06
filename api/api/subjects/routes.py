@@ -3,9 +3,9 @@ from typing import Literal
 
 from fastapi import APIRouter
 
-from .schemas import SubjectSchema, CreateSubject, SubjectUpdate
+from .schemas import CreateLecture, LectureSchema, SubjectSchema, CreateSubject, SubjectUpdate
 from ..teachers.dependencies import Me
-from .dependencies import CurrentSubject, Subjects
+from .dependencies import CurrentSubject, Subjects, Lectures
 
 
 subjects = APIRouter()
@@ -44,6 +44,11 @@ async def remove_subject(subject_id: int, teacher: Me, service: Subjects):
     return "done"
 
 
-@subjects.get("/{subject_id}/lectures/{number}", tags=["lectures"])
-async def get_lecture_by_number(number: int, subject: CurrentSubject):
-    return ""
+@subjects.get("/{subject_id}/lectures/{number}", tags=["lectures"], response_model=LectureSchema)
+async def get_lecture_by_number(subject: CurrentSubject, number: int,  service: Lectures):
+    return await service.get_lecture_by_number(subject, number)
+
+
+@subjects.post("/{subject_id}/lectures/", tags=["lectures"], response_model=LectureSchema)
+async def create_new_lecture(data: CreateLecture, subject: CurrentSubject, service: Lectures):
+    return await service.create_new_lecture(subject, data.title, data.text_description)

@@ -34,7 +34,7 @@ class Lecture(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    number: Mapped[int] = mapped_column(autoincrement=True)
+    number: Mapped[int]
     subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
     title: Mapped[str]
     text_description: Mapped[str | None]
