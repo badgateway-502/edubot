@@ -2,7 +2,11 @@ from fastapi import APIRouter, HTTPException, status
 
 from .schemas import TeacherPublic, TeacherCreate, TeacherUpdate, TeacherPrivate, Token
 from .dependencies import Teachers, Me, LoginForm
-from .exceptions import TeacherNotFoundException, AuthenticationException, TeacherAlreadyExistsException
+from .exceptions import (
+    TeacherNotFoundException,
+    AuthenticationException,
+    TeacherAlreadyExistsException,
+)
 
 
 teachers = APIRouter()
@@ -47,7 +51,9 @@ async def register_teacher(data: TeacherCreate, service: Teachers):
 @teachers.post("/login", response_model=Token)
 async def login(form_data: LoginForm, service: Teachers):
     try:
-        teacher = await service.authenticate_teacher(email=form_data.username, password=form_data.password)
+        teacher = await service.authenticate_teacher(
+            email=form_data.username, password=form_data.password
+        )
     except AuthenticationException as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
