@@ -5,7 +5,11 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 from .models import Teacher
-from .exceptions import TeacherNotFoundException, AuthenticationException
+from .exceptions import (
+    TeacherNotFoundException,
+    AuthenticationException,
+    TeacherAlreadyExistsException,
+)
 from .repositories import BaseTeacherRepository
 
 
@@ -47,7 +51,7 @@ class IPasswordService(ABC):
         raise NotImplementedError
 
 
-class BcryptPasswordService:
+class BcryptPasswordService(IPasswordService):
     """implementation of service for hashing and verifying passwords uses bcrypt algorithm"""
 
     context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -75,12 +79,15 @@ class TeacherService:
     async def get_teacher(self, teacher_id: int):
         teacher = await self.repo.get_by_id(teacher_id)
         if teacher is None:
-            raise TeacherNotFoundException(id=teacher_id)
+            raise TeacherNotFoundException(id=str(teacher_id))
         return teacher
 
     async def register_teacher(
         self, email: str, password: str, firstname: str, lastname: str
     ):
+        teacher = await self.repo.get_by_email(email=email)
+        if teacher is not None:
+            raise TeacherAlreadyExistsException(email=email)
         teacher = Teacher(
             email=email,
             hashed_password=self.pwd_service.hash_password(password),
@@ -88,6 +95,7 @@ class TeacherService:
             lastname=lastname,
         )
         await self.repo.add(teacher)
+
         return teacher
 
     async def authenticate_teacher(self, email: str, password: str):
@@ -111,7 +119,7 @@ class TeacherService:
             "lastname": lastname,
             "email": email,
             "password": (
-                self.password_service.hash_password(password)
+                self.pwd_service.hash_password(password)
                 if password is not None
                 else None
             ),

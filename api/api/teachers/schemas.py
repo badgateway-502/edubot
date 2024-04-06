@@ -30,3 +30,8 @@ class TeacherUpdate(BaseModel):
     password: str | None = None
     firstname: str | None = None
     lastname: str | None = None
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

@@ -3,6 +3,7 @@ from starlette.types import ASGIApp
 
 from .teachers.routes import teachers
 
+
 def get_app() -> ASGIApp:
     app = FastAPI(
         title="Edubot API",
@@ -11,6 +12,5 @@ def get_app() -> ASGIApp:
     )
 
     app.include_router(teachers, prefix="/teachers", tags=["teachers"])
-
 
     return app

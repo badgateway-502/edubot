@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from .models import Teacher
 from ..config import Settings, get_settings
@@ -30,7 +30,7 @@ async def get_teacher_service(
 Teachers = Annotated[TeacherService, Depends(get_teacher_service)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/teachers/login")
 
 
 async def get_current_teacher(
@@ -40,9 +40,11 @@ async def get_current_teacher(
         return await service.get_teacher_by_access_token(token=token)
     except AuthenticationException as exc:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc.message),
-           
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc.message),
         )
 
 
 Me = Annotated[Teacher, Depends(get_current_teacher)]
+
+LoginForm = Annotated[OAuth2PasswordRequestForm, Depends()]

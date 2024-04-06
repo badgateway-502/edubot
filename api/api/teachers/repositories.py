@@ -12,11 +12,11 @@ class BaseTeacherRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> Teacher:
+    async def get_by_email(self, email: str) -> Teacher | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, teacher_id: int) -> Teacher:
+    async def get_by_id(self, teacher_id: int) -> Teacher | None:
         raise NotImplementedError
 
 
@@ -34,5 +34,5 @@ class SqlalchemyTeacherRepository(BaseTeacherRepository):
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_id(self, teacher_id: int) -> Teacher:
+    async def get_by_id(self, teacher_id: int) -> Teacher | None:
         return await self.session.get(Teacher, teacher_id)
