@@ -25,9 +25,13 @@ def check_questions_len(questions: List, question_id_now: int) -> Dict[str, bool
 async def my_subjects_button(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
     lecture = future_api.get_lecture_by_number(state_data['subject_id'], state_data['lecture_id'])
+    state_data['lecture_quiz'] = lecture['questions']
+    state_data['question_id'] = 0
+    state_data['questions_answer'] = {}
 
     # выводим текст задания и меняем клавиатуру
-    await message.reply('text', reply_markup=keyboard_quiz(**check_questions_len(lecture['questions'], 0)))  # TODO
+    await message.reply(state_data['lecture_quiz'][state_data['question_id']],
+                        reply_markup=keyboard_quiz(**check_questions_len(lecture['questions'], 0)))  # TODO
     if lecture['questions'][0]['type'] == 'scalar':
         await message.answer('варианты ответов: ',
                              reply_markup=keyboard_answer_variants(lecture['questions'][0]['variants']))
@@ -40,9 +44,6 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
         teacher_name = teacher['firstname'] + ' ' + teacher['lastname']
         await message.answer(f'отправьте файл с решением в виде PDF-файла. {teacher_name} проверит работу.')
         await state.set_state(Quiz.moderfile_question)
-    state_data['lecture_quiz'] = lecture['questions']
-    state_data['question_id'] = 0
-    state_data['questions_answer'] = {}
     await state.set_data(state_data)
 
 
@@ -53,8 +54,18 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
     if state_data['question_id'] <= 0:
         return
-    await message.reply('text', reply_markup=keyboard_quiz( # отправляем задание пользователю и справлем keyboard в случае необходимсти (1 задание или последнее)
-        **check_questions_len(state_data['lecture_quiz']['questions'], state_data['question_id'])))  # TODO ['questions']
+    if state_data['question_id'] in state_data['questions_answer'].keys():
+        user_answer = state_data['questions_answer'][state_data['question_id']]
+        # если ученик уже ответи на этот вопрос сообщаем ему об этом
+        await message.reply(state_data['lecture_quiz'][state_data['question_id']] + f'\n\nВаш ответ {user_answer}',
+                            reply_markup=keyboard_quiz(
+                                **check_questions_len(state_data['lecture_quiz']['questions'],
+                                                      state_data['question_id'])))  # TODO ['questions']
+    else:
+        # отправляем задание пользователю и справлем keyboard в случае необходимсти (1 задание или последнее)
+        await message.reply(state_data['lecture_quiz'][state_data['question_id']],
+                            reply_markup=keyboard_quiz(**check_questions_len(state_data['lecture_quiz']['questions'],
+                                                                             state_data['question_id'])))
     # три типа вопросов: тест, точный ответ - ручной ввод, оправка решения в виде файла
     if state_data['lecture_quiz']['questions'][state_data['question_id'] - 1]['type'] == 'scalar':
         await message.answer('варианты ответов: ',
@@ -81,26 +92,38 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
     if state_data['question_id'] >= len(state_data['lecture_quiz']):
         return
-    if state_data['question_id'] == len(state_data['lecture_quiz']): # ученик дошел до конца теста
+    if state_data['question_id'] == len(state_data['lecture_quiz']):  # ученик дошел до конца теста
         await message.answer('Конец теста')
         answers = ''
         for i in range(len(state_data['lecture_quiz'])):
             try:
-                answers += f'\n{i+1} задание - ' + state_data['questions_answer'][i] # отдаем ответы, созранившиеся в state_data['questions_answer']
-            except KeyError: # если ученик не ответи на какойто вопрос, пропускаем этот вопрос
+                answers += f'\n{i + 1} задание - ' + state_data['questions_answer'][
+                    i]  # отдаем ответы, созранившиеся в state_data['questions_answer']
+            except KeyError:  # если ученик не ответи на какойто вопрос, пропускаем этот вопрос
                 pass
 
         await message.answer(f'Ваши ответы: {answers}')
     else:
-        await message.reply('text', reply_markup=keyboard_quiz(
-            **check_questions_len(state_data['lecture_quiz']['questions'], state_data['question_id']) # отправляем задание пользователю и справлем keyboard в случае необходимсти (1 задание или последнее)
-        ))  # TODO ['questions']
+        if state_data['question_id'] in state_data['questions_answer'].keys():
+            user_answer = state_data['questions_answer'][state_data['question_id']]
+            # если ученик уже ответи на этот вопрос сообщаем ему об этом
+            await message.reply(state_data['lecture_quiz'][state_data['question_id']] + f'\n\nВаш ответ {user_answer}',
+                                reply_markup=keyboard_quiz(
+                                    **check_questions_len(state_data['lecture_quiz']['questions'],
+                                                          state_data['question_id'])))  # TODO ['questions']
+        else:
+            # отправляем задание пользователю и справлем keyboard в случае необходимсти (1 задание или последнее)
+            await message.reply(state_data['lecture_quiz'][state_data['question_id']],
+                                reply_markup=keyboard_quiz(
+                                    **check_questions_len(state_data['lecture_quiz']['questions'],
+                                                          state_data['question_id'])))
 
         # три типа вопросов: тест, точный ответ - ручной ввод, оправка решения в виде файла
         if state_data['lecture_quiz']['questions'][state_data['question_id'] + 1]['type'] == 'scalar':
             await message.answer('варианты ответов: ',
                                  reply_markup=keyboard_answer_variants(
-                                     state_data['lecture_quiz']['questions'][state_data['question_id'] + 1]['variants']))
+                                     state_data['lecture_quiz']['questions'][state_data['question_id'] + 1][
+                                         'variants']))
             await state.set_state(Quiz.variants_question)
         elif state_data['lecture_quiz']['questions'][state_data['question_id'] + 1]['type'] == 'moderfile':
             await message.answer('напишите ответ самостоятельно')
