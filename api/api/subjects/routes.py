@@ -51,39 +51,39 @@ async def get_lecture_by_number(subject: CurrentSubject, number: int,  service: 
 
 
 @subjects.post("/{subject_id}/lectures/", tags=["lectures"], response_model=LectureSchema)
-async def create_new_lecture(data: CreateLecture, subject: CurrentSubject, service: Lectures):
-    return await service.create_new_lecture(subject, data.title, data.text_description)
+async def create_new_lecture(data: CreateLecture, subject: CurrentSubject, service: Lectures, by: Me):
+    return await service.create_new_lecture(subject, data.title, data.text_description, by)
 
 
 @subjects.post("/{subject_id}/lectures/{number}/upload-description", response_model=LectureSchema)
-async def upload_description_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
+async def upload_description_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me):
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
-        await service.add_description_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown")
+        await service.add_description_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown", by=by)
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
     return lecture
 
 
 @subjects.post("/{subject_id}/lectures/{number}/upload-video", response_model=LectureSchema)
-async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
+async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me):
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
-        await service.add_video_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown")
+        await service.add_video_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown", by=by)
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
     return lecture
 
 
 @subjects.patch("/{subject_id}/lectures/{number}", response_model=LectureSchema)
-async def update_lecture(data: UpdateLecture, subject: CurrentSubject, number: int, service: Lectures):
+async def update_lecture(data: UpdateLecture, subject: CurrentSubject, number: int, service: Lectures, by: Me):
     lecture = await service.get_lecture_by_number(subject, number)
-    await service.update_lecture(lecture, data.title, data.text_description)
+    await service.update_lecture(lecture, by, data.title, data.text_description)
     return lecture
 
 
 @subjects.delete("/{subject_id}/lectures/{number}", response_model=Literal["done"])
-async def remove_lecture(subject: CurrentSubject, number: int, service: Lectures):
+async def remove_lecture(subject: CurrentSubject, number: int, service: Lectures, by: Me):
     lecture = await service.get_lecture_by_number(subject, number)
-    await service.remove_lecture(lecture)
+    await service.remove_lecture(lecture, by)
     return "done"

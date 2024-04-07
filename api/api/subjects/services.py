@@ -6,6 +6,7 @@ from datetime import date
 
 from pydantic import NonNegativeFloat
 from .exceptions import (
+    LectureAccessException,
     LectureAlreadyExistsException,
     LectureNotFoundException,
     SubjectAccessException,
@@ -87,8 +88,10 @@ class LecturesService:
         self.telegram_service = telegram_service
 
     async def create_new_lecture(
-        self, subject: Subject, title: str, text_description: str | None
+        self, subject: Subject, title: str, text_description: str | None, by: Teacher
     ) -> Lecture:
+        if subject.teacher_id != by.id:
+            raise SubjectAccessException(id=str(subject.id))
         lecture = await self.lectures_repo.get_by_title(
             subject_id=subject.id, title=title
         )
@@ -109,20 +112,28 @@ class LecturesService:
             raise LectureNotFoundException(subject=subject.name, number=str(number))
         return lecture
     
-    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str):
+    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher):
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.description_file_id = file_id
         await self.lectures_repo.add(lecture)
 
-    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str):
+    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher):
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.video_file_id = file_id
         await self.lectures_repo.add(lecture)
     
-    async def remove_lecture(self, lecture: Lecture):
+    async def remove_lecture(self, lecture: Lecture, by: Teacher):
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
         await self.lectures_repo.remove(lecture)
 
-    async def update_lecture(self, lecture: Lecture, title: str | None = None, text_description: str | None = None):
+    async def update_lecture(self, lecture: Lecture, by: Teacher, title: str | None = None, text_description: str | None = None):
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
         if title is not None:
             l = await self.lectures_repo.get_by_title(lecture.subject_id, title)
             if l is not None:
@@ -131,3 +142,6 @@ class LecturesService:
         if text_description is not None:
             lecture.text_description = text_description
         await self.lectures_repo.add(lecture)
+
+    async def get_lecture_lab(self, lecture: Lecture):
+        ...

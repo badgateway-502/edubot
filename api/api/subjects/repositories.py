@@ -162,3 +162,22 @@ class BaseLabsRepository(ABC):
     @abstractmethod
     async def get_by_lecture_id(self, lecture_id: int) -> LectureLab | None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def add(self, lab: LectureLab):
+        raise NotImplementedError
+
+
+class SqlalchemyLabsRepository(BaseLabsRepository):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_lecture_id(self, lecture_id: int) -> LectureLab | None:
+        query = select(LectureLab).where(LectureLab.lecture_id == lecture_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def add(self, lab: LectureLab):
+        self.session.add(lab)
+        await self.session.commit()
+        await self.session.refresh(lab)

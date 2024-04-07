@@ -36,6 +36,7 @@ class Lecture(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     number: Mapped[int]
     subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
+    subject: Mapped[Subject] = relationship(back_populates="lectures")
     title: Mapped[str]
     text_description: Mapped[str | None]
     description_file_id: Mapped[str | None]
