@@ -73,7 +73,9 @@ async def create_new_lecture(
 
 
 @subjects.post(
-    "/{subject_id}/lectures/{number}/upload-description", response_model=LectureSchema, tags=["lectures"]
+    "/{subject_id}/lectures/{number}/upload-description",
+    response_model=LectureSchema,
+    tags=["lectures"],
 )
 async def upload_description_file_to_lecture(
     subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me
@@ -91,7 +93,9 @@ async def upload_description_file_to_lecture(
 
 
 @subjects.post(
-    "/{subject_id}/lectures/{number}/upload-video", response_model=LectureSchema, tags=["lectures"]
+    "/{subject_id}/lectures/{number}/upload-video",
+    response_model=LectureSchema,
+    tags=["lectures"],
 )
 async def upload_video_file_to_lecture(
     subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me
@@ -108,7 +112,9 @@ async def upload_video_file_to_lecture(
     return lecture
 
 
-@subjects.patch("/{subject_id}/lectures/{number}", response_model=LectureSchema, tags=["lectures"])
+@subjects.patch(
+    "/{subject_id}/lectures/{number}", response_model=LectureSchema, tags=["lectures"]
+)
 async def update_lecture(
     data: UpdateLecture, subject: CurrentSubject, number: int, service: Lectures, by: Me
 ):
@@ -117,7 +123,9 @@ async def update_lecture(
     return lecture
 
 
-@subjects.delete("/{subject_id}/lectures/{number}", response_model=Literal["done"], tags=["lectures"])
+@subjects.delete(
+    "/{subject_id}/lectures/{number}", response_model=Literal["done"], tags=["lectures"]
+)
 async def remove_lecture(
     subject: CurrentSubject, number: int, service: Lectures, by: Me
 ):
@@ -126,30 +134,52 @@ async def remove_lecture(
     return "done"
 
 
-@subjects.get("/{subject_id}/lectures/{number}/lab", response_model=LabSchema, tags=["lectures", "labs"])
+@subjects.get(
+    "/{subject_id}/lectures/{number}/lab",
+    response_model=LabSchema,
+    tags=["lectures", "labs"],
+)
 async def get_lecture_lab(subject: CurrentSubject, number: int, service: Lectures):
     lecture = await service.get_lecture_by_number(subject, number)
     return await service.get_lecture_lab(lecture)
 
 
-@subjects.patch("/{subject_id}/lectures/{number}/lab", response_model=LabSchema, tags=["lectures", "labs"])
-async def update_lecture_lab(data: UpdateLab, subject: CurrentSubject, number: int, service: Lectures, by: Me):
+@subjects.patch(
+    "/{subject_id}/lectures/{number}/lab",
+    response_model=LabSchema,
+    tags=["lectures", "labs"],
+)
+async def update_lecture_lab(
+    data: UpdateLab, subject: CurrentSubject, number: int, service: Lectures, by: Me
+):
     lecture = await service.get_lecture_by_number(subject, number)
     lab = await service.get_lecture_lab(lecture)
     await service.update_lecture_lab(lab, by, data.title, data.text_description)
     return lab
 
 
-@subjects.delete("/{subject_id}/lectures/{number}/lab", response_model=Literal["done"], tags=["lectures", "labs"])
-async def remove_lecture_lab(data: UpdateLab, subject: CurrentSubject, number: int, service: Lectures, by: Me):
+@subjects.delete(
+    "/{subject_id}/lectures/{number}/lab",
+    response_model=Literal["done"],
+    tags=["lectures", "labs"],
+)
+async def remove_lecture_lab(
+    data: UpdateLab, subject: CurrentSubject, number: int, service: Lectures, by: Me
+):
     lecture = await service.get_lecture_by_number(subject, number)
     lab = await service.get_lecture_lab(lecture)
     await service.remove_lecture_lab(lab, by)
     return "done"
 
 
-@subjects.post("/{subject_id}/lectures/{number}/lab/upload-description", response_model=LabSchema, tags=["lectures", "labs"])
-async def attach_file_to_lecture_lab(file: UploadFile, subject: CurrentSubject, number: int, service: Lectures, by: Me):
+@subjects.post(
+    "/{subject_id}/lectures/{number}/lab/upload-description",
+    response_model=LabSchema,
+    tags=["lectures", "labs"],
+)
+async def attach_file_to_lecture_lab(
+    file: UploadFile, subject: CurrentSubject, number: int, service: Lectures, by: Me
+):
     lecture = await service.get_lecture_by_number(subject, number)
     lab = await service.get_lecture_lab(lecture)
     try:

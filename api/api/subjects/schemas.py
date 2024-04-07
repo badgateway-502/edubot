@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Literal
-from api.database import Base
 from pydantic import BaseModel, Field
+
 from ..teachers.schemas import TeacherPublic
 
 
@@ -79,7 +79,7 @@ class ModerQuestion(BaseModel):
 
     question: str
     type: Literal["moder"]
-    
+
 
 class ModerFileQuestion(BaseModel):
     model_config = {"from_attributes": True}
@@ -101,7 +101,6 @@ class VariantQuestion(BaseModel):
     question: str
     type: Literal["moder"]
     variants: list[AnswerVariant]
-
 
 
 class LectureTestSchema(BaseModel):

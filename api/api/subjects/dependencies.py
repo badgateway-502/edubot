@@ -24,7 +24,6 @@ def get_subjects_service(
 ) -> SubjectsService:
     return SubjectsService(
         subjects_repo=SqlalchemySubjectsRepository(session),
-        
     )
 
 

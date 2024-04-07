@@ -166,7 +166,7 @@ class BaseLabsRepository(ABC):
     @abstractmethod
     async def add(self, lab: LectureLab):
         raise NotImplementedError
-    
+
     @abstractmethod
     async def remove(self, lab: LectureLab):
         raise NotImplementedError
@@ -185,7 +185,7 @@ class SqlalchemyLabsRepository(BaseLabsRepository):
         self.session.add(lab)
         await self.session.commit()
         await self.session.refresh(lab)
-    
+
     async def remove(self, lab: LectureLab):
         await self.session.delete(lab)
         await self.session.commit()

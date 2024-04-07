@@ -16,7 +16,11 @@ from .exceptions import (
     TelegramException,
 )
 from .models import Lecture, LectureLab, Subject
-from .repositories import BaseLabsRepository, BaseSubjectsRepository, BaseLecturesRepository
+from .repositories import (
+    BaseLabsRepository,
+    BaseSubjectsRepository,
+    BaseLecturesRepository,
+)
 from ..teachers.models import Teacher
 
 
@@ -30,11 +34,14 @@ class HttpxTelegramService(BaseTelegramService):
     def __init__(self, bot_token: str, chat_id: str) -> None:
         self.bot_token = bot_token
         self.chat_id = chat_id
-    
+
     async def get_tg_file_id(self, fp: BinaryIO, filename: str) -> str:
         async with AsyncClient() as client:
             file = {"document": (filename, fp)}
-            res = await client.post(f"https://api.telegram.org/bot{self.bot_token}/sendDocument?chat_id={self.chat_id}", files=file)
+            res = await client.post(
+                f"https://api.telegram.org/bot{self.bot_token}/sendDocument?chat_id={self.chat_id}",
+                files=file,
+            )
             if res.status_code == 200:
                 return res.json()["result"]["document"]["file_id"]
             else:
@@ -44,7 +51,7 @@ class HttpxTelegramService(BaseTelegramService):
 class SubjectsService:
     def __init__(self, subjects_repo: BaseSubjectsRepository):
         self.subjects_repo = subjects_repo
-        
+
     async def get_subjects(self, teacher_id: int | None = None) -> list[Subject]:
         return await self.subjects_repo.get_all(teacher_id=teacher_id)
 
@@ -81,7 +88,12 @@ class SubjectsService:
 
 
 class LecturesService:
-    def __init__(self, lectures_repo: BaseLecturesRepository, telegram_service: BaseTelegramService, labs_repo: BaseLabsRepository) -> None:
+    def __init__(
+        self,
+        lectures_repo: BaseLecturesRepository,
+        telegram_service: BaseTelegramService,
+        labs_repo: BaseLabsRepository,
+    ) -> None:
         self.lectures_repo = lectures_repo
         self.telegram_service = telegram_service
         self.labs_repo = labs_repo
@@ -98,7 +110,11 @@ class LecturesService:
             raise LectureAlreadyExistsException(subject=subject.name, title=title)
         max_number = await self.lectures_repo.get_max_number(subject_id=subject.id) or 0
         lecture = Lecture(
-            subject_id=subject.id, title=title, text_description=text_description, created_at=date.today(), number=max_number+1
+            subject_id=subject.id,
+            title=title,
+            text_description=text_description,
+            created_at=date.today(),
+            number=max_number + 1,
         )
         await self.lectures_repo.add(lecture)
         return lecture
@@ -110,32 +126,42 @@ class LecturesService:
         if lecture is None:
             raise LectureNotFoundException(subject=subject.name, number=str(number))
         return lecture
-    
-    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher):
+
+    async def add_description_file_to_lecture(
+        self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher
+    ):
         if lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lecture.id))
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.description_file_id = file_id
         await self.lectures_repo.add(lecture)
 
-    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher):
+    async def add_video_file_to_lecture(
+        self, lecture: Lecture, file: BinaryIO, filename: str, by: Teacher
+    ):
         if lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lecture.id))
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.video_file_id = file_id
         await self.lectures_repo.add(lecture)
-    
+
     async def remove_lecture(self, lecture: Lecture, by: Teacher):
         if lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lecture.id))
         await self.lectures_repo.remove(lecture)
 
-    async def update_lecture(self, lecture: Lecture, by: Teacher, title: str | None = None, text_description: str | None = None):
+    async def update_lecture(
+        self,
+        lecture: Lecture,
+        by: Teacher,
+        title: str | None = None,
+        text_description: str | None = None,
+    ):
         if lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lecture.id))
         if title is not None:
-            l = await self.lectures_repo.get_by_title(lecture.subject_id, title)
-            if l is not None:
+            lect = await self.lectures_repo.get_by_title(lecture.subject_id, title)
+            if lect is not None:
                 raise LectureAlreadyExistsException(title=title)
             lecture.title = title
         if text_description is not None:
@@ -147,23 +173,33 @@ class LecturesService:
         if lab is None:
             raise LectureLabNotFoundException(lecture_id=str(lecture.id))
         return lab
-    
-    async def add_lecture_lab(self, lecture: Lecture, by: Teacher, title: str, text_description: str | None) -> LectureLab:
+
+    async def add_lecture_lab(
+        self, lecture: Lecture, by: Teacher, title: str, text_description: str | None
+    ) -> LectureLab:
         if lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lecture.id))
         lab = await self.labs_repo.get_by_lecture_id(lecture.id)
         if lab is not None:
             raise LectureLabAlreadyExistsException(lecture_id=str(lecture.id))
-        lab = LectureLab(lecture_id=lecture.id, title=title, text_description=text_description)
+        lab = LectureLab(
+            lecture_id=lecture.id, title=title, text_description=text_description
+        )
         await self.labs_repo.add(lab)
         return lab
-    
+
     async def remove_lecture_lab(self, lab: LectureLab, by: Teacher):
         if lab.lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lab.lecture.id))
         await self.labs_repo.remove(lab)
-    
-    async def update_lecture_lab(self, lab: LectureLab, by: Teacher, title: str | None, text_description: str | None):
+
+    async def update_lecture_lab(
+        self,
+        lab: LectureLab,
+        by: Teacher,
+        title: str | None,
+        text_description: str | None,
+    ):
         if lab.lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lab.lecture.id))
         if title is not None:
@@ -172,7 +208,9 @@ class LecturesService:
             lab.text_description = text_description
         await self.labs_repo.add(lab)
 
-    async def attach_file_to_lecture_lab(self, lab: LectureLab, file: BinaryIO, filename: str, by: Teacher):
+    async def attach_file_to_lecture_lab(
+        self, lab: LectureLab, file: BinaryIO, filename: str, by: Teacher
+    ):
         if lab.lecture.subject.teacher_id != by.id:
             raise LectureAccessException(id=str(lab.lecture.id))
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
