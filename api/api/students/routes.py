@@ -9,7 +9,7 @@ from .schemas import StudentSchema
 students = APIRouter()
 
 
-@students.get("{student_id}", response_model=StudentSchema)
+@students.get("/{student_id}", response_model=StudentSchema)
 async def get_student(student_id: int, service: Students):
     return await service.get_student(student_id)
 
