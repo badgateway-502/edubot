@@ -75,14 +75,14 @@ async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, fil
     return lecture
 
 
-@subjects.patch("/{subject_id}/lectures/{number}/upload-video", response_model=LectureSchema)
+@subjects.patch("/{subject_id}/lectures/{number}", response_model=LectureSchema)
 async def update_lecture(data: UpdateLecture, subject: CurrentSubject, number: int, service: Lectures):
     lecture = await service.get_lecture_by_number(subject, number)
     await service.update_lecture(lecture, data.title, data.text_description)
     return lecture
 
 
-@subjects.delete("/{subject_id}/lectures/{number}/upload-video", response_model=Literal["done"])
+@subjects.delete("/{subject_id}/lectures/{number}", response_model=Literal["done"])
 async def remove_lecture(subject: CurrentSubject, number: int, service: Lectures):
     lecture = await service.get_lecture_by_number(subject, number)
     await service.remove_lecture(lecture)
