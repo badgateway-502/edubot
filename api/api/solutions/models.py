@@ -33,7 +33,7 @@ class LabSolution(Base):
 
 
 class TestSolution(Base):
-    __tablename__ = "lab_solution"
+    __tablename__ = "test_solution"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     student_id: Mapped[int] = mapped_column(ForeignKey("student.id"))
