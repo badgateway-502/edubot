@@ -44,8 +44,7 @@ def keyboard_subjects(subjects: List[SubjectType]) -> ReplyKeyboardMarkup:
 # клавиатура для выбранного предмета
 def keyboard_for_subject() -> ReplyKeyboardMarkup:
     kb = [
-        [types.KeyboardButton(text="Текущая лекция"),
-         types.KeyboardButton(text="Список всех доступных лекций")],
+        [types.KeyboardButton(text="Список всех доступных лекций")],
         [types.KeyboardButton(text="В меню"),
          types.KeyboardButton(text="К списку предметов")],
     ]
@@ -54,7 +53,7 @@ def keyboard_for_subject() -> ReplyKeyboardMarkup:
 
 
 # клавиатура для выбранной лекции
-def keyboard_for_current_lecture(has_test: bool = False, has_lab: bool = False) -> ReplyKeyboardMarkup:
+def keyboard_for_current_lecture(has_test: bool = False, has_lab: bool = False) -> types.ReplyKeyboardMarkup:
     kb = [
         [types.KeyboardButton(text="В меню"),
          types.KeyboardButton(text="К списку предметов"),
@@ -62,11 +61,11 @@ def keyboard_for_current_lecture(has_test: bool = False, has_lab: bool = False) 
     ]
 
     if has_lab:
-        kb.append(types.KeyboardButton(text="Сдать лаб работу"))
+        kb.append([types.KeyboardButton(text="Сдать лаб работу")])
     if has_test:
-        kb.append(types.KeyboardButton(text="Пройти тест"))
+        kb.append([types.KeyboardButton(text="Пройти тест")])
     if not has_lab and not has_test:
-        kb.append(types.KeyboardButton(text="Следующая лекция"))
+        kb.append([types.KeyboardButton(text="Следующая лекция")])
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     return keyboard
 
@@ -75,12 +74,18 @@ def keyboard_to_current_lecture():
     keyboard = types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text="Вернуться к лекции")]], resize_keyboard=True)
     return keyboard
 
+def lab_opened() -> ReplyKeyboardMarkup:
+    kb = [
+        [types.KeyboardButton(text="К лекции")],
+    ]
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+    return keyboard
+
 
 def keyboard_for_old_lecture() -> ReplyKeyboardMarkup:
     kb = [
         [types.KeyboardButton(text="В меню"),
-         types.KeyboardButton(text="К списку предметов"),
-         types.KeyboardButton(text="Список всех доступных лекций")],
+         types.KeyboardButton(text="К списку предметов")],
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     return keyboard
@@ -90,8 +95,7 @@ def keyboard_for_old_lecture() -> ReplyKeyboardMarkup:
 def keyboard_for_all_lectures() -> ReplyKeyboardMarkup:
     kb = [
         [types.KeyboardButton(text="В меню"),
-         types.KeyboardButton(text="К списку предметов"),
-         types.KeyboardButton(text="Текущая лекция")],
+         types.KeyboardButton(text="К списку предметов")],
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     return keyboard
@@ -133,11 +137,13 @@ def keyboard_answer_variants(variants: List[str]) -> types.InlineKeyboardMarkup:
     for variant in variants:
         if len(keyboard[-1]) < 3:
             keyboard[-1].append(types.InlineKeyboardButton(
-                text=f"{variant}",
+                text=f"{variant['text']}",
+                callback_data=f"{variant['text']}"
             ))
         else:
             keyboard.append([types.InlineKeyboardButton(
-                text=f"{variant}",
+                text=f"{variant['text']}",
+                callback_data=f"{variant['text']}"
             )])
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=keyboard)
     return keyboard

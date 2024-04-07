@@ -25,6 +25,5 @@ class Lab(StatesGroup):
 class Quiz(StatesGroup):
     variants_question = State()  # вопрос с вариантом ответов
     scalare_question = State()  # вопрос с без вариантов ответов
-    moderfile_question = State()  # вопрос с пост модерацией
     finish_quiz = State()  # учениr на стоит перде выбором закончить ли тест?
     finished_quiz = State()  # учениr получил результат теста

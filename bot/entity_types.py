@@ -13,6 +13,8 @@ class LectureType(TypedDict):
     subject_id: int
     number: int
     title: str
+    lab: None | str
+    test: None | List
     text_description: str
     description_file_id: None | int
     video_file_id: None | int
