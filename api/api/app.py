@@ -12,7 +12,7 @@ from starlette.types import ASGIApp
 from .teachers.routes import teachers
 from .students.routes import students
 from .subjects.routes import subjects
-
+from .solutions.routes import solutions
 
 async def item_exception_handler(request: Request, exception: Exception) -> Response:
     codes_mapping = {
@@ -44,6 +44,7 @@ def get_app() -> ASGIApp:
     app.include_router(teachers, prefix="/teachers", tags=["teachers"])
     app.include_router(students, prefix="/students", tags=["students"])
     app.include_router(subjects, prefix="/subjects", tags=["subjects"])
+    app.include_router(solutions, prefix="/solutions", tags=["solutions"])
     app.add_exception_handler(ItemException, item_exception_handler)
 
     return app
