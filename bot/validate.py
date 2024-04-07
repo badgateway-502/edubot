@@ -2,7 +2,7 @@ import re
 import string
 # import pydantic
 
-
+# валидация имени пользователя - нельзя > 40 символов, цифры, спецсимволы. имя и фамилия должны быть написаны через пробел
 def validate_name(name: str):
     if len(name) > 40:
         raise ValueError("Длина вашего имени не может быть больше сорока символов")

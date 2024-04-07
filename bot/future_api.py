@@ -1,17 +1,19 @@
-from typing import Dict
+from typing import Dict, List, TypedDict
 
+import requests
+
+from bot.entity_types import SubjectType, SubjectTitle_IdType, LectureType
 from config_reader import config
 from lectures import *
 
+# проверка существует ли пользователь
+def check_user_db(user_id: int):
+    headers = {'accept': 'application/json'}
+    student = requests.get(f'http://127.0.0.1:8000/students{user_id}', headers=headers)
+    return True if student.status_code == 200 else False
 
-async def check_user_db(user_id: int):
-    if user_id == int(config.your_tg_id.get_secret_value()):
-        return True
-    else:
-        return False
 
-
-async def get_academic_performance_of_current_subject_db(subject: int, user_id: int):
+def get_academic_performance_of_current_subject_db(subject: int, user_id: int):
     if user_id == int(config.your_tg_id.get_secret_value()):
         if subject == 1:
             return 100
@@ -21,7 +23,7 @@ async def get_academic_performance_of_current_subject_db(subject: int, user_id: 
             return 100
 
 
-async def get_whole_score_of_current_subject_db(subject: int):
+def get_whole_score_of_current_subject_db(subject: int):
     if subject == 1:
         return 120
     if subject == 2:
@@ -30,16 +32,16 @@ async def get_whole_score_of_current_subject_db(subject: int):
         return 120
 
 
-async def get_academic_performance(subject_id: int, user_id: int) -> float:
+def get_academic_performance(subject_id: int, user_id: int) -> float:
     academic_performance: float = round(
-        await get_academic_performance_of_current_subject_db(subject_id, user_id) / (
-            await get_whole_score_of_current_subject_db(subject_id)) * 100, 2)
+        get_academic_performance_of_current_subject_db(subject_id, user_id) / (
+            get_whole_score_of_current_subject_db(subject_id)) * 100, 2)
     return academic_performance
 
 
 # title=True => return lecture.title
 # title=False => return lecture
-async def get_current_lecture_db(user_id: int, subject_id: int, tittle: bool = False) -> Dict[str, str] | str:
+def get_current_lecture_db(user_id: int, subject_id: int, tittle: bool = False) -> Dict[str, str] | str:
     if user_id == int(config.your_tg_id.get_secret_value()):
         if subject_id == 1:
             if tittle:
@@ -53,72 +55,71 @@ async def get_current_lecture_db(user_id: int, subject_id: int, tittle: bool = F
             if tittle:
                 return program_lecture[0]['title']
             return program_lecture[0]
+    # TODO
+
+# получаем лекцию по ее номеру в предмете
+def get_lecture_by_number(subject_id: int, lecture_number: int) -> LectureType:
+    headers = {'accept': 'application/json'}
+    lecture = requests.get(f'http://127.0.0.1:8000/subjects/{subject_id}/lectures/{lecture_number}', headers=headers)
+    return lecture.json()
 
 
-async def get_lectures_all_db(user_id: int, subject_id: int, lecture_id: int = 0):
-    if user_id == int(config.your_tg_id.get_secret_value()):
-        if subject_id == 1:
-            if not lecture_id:
-                return [(x['id'], x['title']) for x in math_lectures]
-            for i in math_lectures:
-                if i['id'] == lecture_id:
-                    return i
-            raise ValueError('Лекции с такой ID не существует')
-        if subject_id == 2:
-            if not lecture_id:
-                return [(x['id'], x['title']) for x in english_lectures]
-            for i in english_lectures:
-                if i['id'] == lecture_id:
-                    return i
-            raise ValueError('Лекции с такой ID не существует')
-        if subject_id == 3:
-            if not lecture_id:
-                return [(x['id'], x['title']) for x in program_lecture]
-            for i in program_lecture:
-                if i['id'] == lecture_id:
-                    return i
-            raise ValueError('Лекции с такой ID не существует')
+# получаем все доступные лекции в предмете
+def get_lectures_all_db(user_id: int, subject_id: int) -> List[LectureType]:
+    headers = {'accept': 'application/json'}
+    subject = requests.get(f'http://127.0.0.1:8000/subjects/{subject_id}', headers=headers)
+    return subject.json()['lectures']
 
+# получаем информацию о предмете - название, преподавателя, который ведет предмет, успеваемость ученика по предмету
+def get_info_current_subject(user_id: int, subject_id: int) -> SubjectType:
+    headers = {'accept': 'application/json'}
+    subject = requests.get(f'http://127.0.0.1:8000/subjects/{subject_id}', headers=headers)
+    # TODO academic performance
 
-async def get_info_about_subject_db(user_id: int, subject_id=None) -> tuple[int, str, str, float, Dict[str, str]] | \
-                                                                      list[tuple[int, str, str, float, Dict[str, str]]]:
-    dicto = [(1, 'math', 'mihail voronov', await get_academic_performance(1, user_id),
-              await get_current_lecture_db(user_id, 1, True)),
-             (2, 'english', 'gleb mishustin', await get_academic_performance(2, user_id),
-              await get_current_lecture_db(user_id, 2, True)),
-             (3, 'programming', 'dmitriy popov', await get_academic_performance(3, user_id),
-              await get_current_lecture_db(user_id, 3, True)),
-             ]
-    if subject_id or subject_id == 0:
-        for i in dicto:
-            if i[0] == subject_id:
-                return i
-        raise ValueError('Такого предмета нет')
-    return dicto
+    return subject.json()
 
+# получить все предметы
+def get_info_about_subjects_db() -> List[SubjectType]:
+    headers = {'accept': 'application/json'}
+    subjects = requests.get('http://127.0.0.1:8000/subjects/', headers=headers)
 
-async def get_info_user_db(user_id: int):
-    available_subjects = await get_info_about_subject_db(user_id)
-    academic_performance = {}
-    for subject in available_subjects:
-        academic_performance[subject[1]]: float = subject[3]
+    # TODO academic performance
 
-    dicto = {
-        'id': int(config.your_tg_id.get_secret_value()),
-        'name': 'Кирилл',
-        'surname': 'Подковырин',
-        'academic_performance': academic_performance
+    return subjects.json()
+
+# получить все названия предметов и из идентификатор
+def get_subjects_titles() -> SubjectTitle_IdType:
+    headers = {'accept': 'application/json'}
+    subjects = requests.get('http://127.0.0.1:8000/subjects/', headers=headers)
+    titles = {subject['name']: subject['id'] for subject in subjects.json()}
+    return titles
+
+# получить информацию о пользователе - ФИ, успеваемость, текущие лекции.
+def get_info_user_db(user_id: int):
+    headers = {'accept': 'application/json'}
+    user = requests.get(f'http://127.0.0.1:8000/students{user_id}', headers=headers)
+    if user.status_code == 200:
+        user = user.json()
+        available_subjects = get_info_about_subjects_db(user_id)
+        academic_performance = {}
+        # for subject in available_subjects:
+        #     academic_performance[subject[1]]: float = subject[3]
+
+        dicto = { # TODO
+            'name': user['firstname'],
+            'surname': user['lastname'],
+            'academic_performance': academic_performance
+        }
+        return dicto
+    else:
+        return False
+
+# регистрация нового ученика, в начале, при вводе /start
+def create_new_student_db(name: str, surname: str, user_id: int):
+    params = {
+        "id": user_id,
+        "firstname": f"{name}",
+        "lastname": f"{surname}",
     }
-    return dicto
-
-
-async def create_new_student_db(name: str, surname: str, user_id: int):
-    assert name, str
-    assert surname, str
-    assert user_id, int
-    # post
-
-
-async def get_info_about_subject(user_id: int, subject_id: int) -> tuple[int, str, str, float]:
-    info: tuple[int, str, str, float] = await get_info_about_subject_db(user_id, subject_id)
-    return info
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
+    requests.post('http://127.0.0.1:8000/students/', json=params, headers=headers)

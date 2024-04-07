@@ -3,8 +3,7 @@ from pydantic import SecretStr
 
 
 class Settings(BaseSettings):
-    bot_token: SecretStr
-    your_tg_id: SecretStr
+    bot_token: SecretStr  # секретный токен бота берется из .env
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
 

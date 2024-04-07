@@ -9,13 +9,10 @@ from bot.states import AFKState
 profile_router = Router()
 
 
-async def get_info_about_user(user_id: int):
-    return await future_api.get_info_user_db(user_id)
-
-
 @profile_router.message(AFKState.logged, F.text == "Мой профиль 🍕")
 async def my_profile_button(message: types.Message):
-    user = await get_info_about_user(message.from_user.id)
+    # выводим информацию о пользователе. ПРОФИЛЬ
+    user = future_api.get_info_user_db(message.from_user.id)
     student = Student(**user)
 
     academic_performance = []

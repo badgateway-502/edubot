@@ -1,3 +1,4 @@
+import requests
 from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -11,7 +12,8 @@ start_router = Router()
 
 @start_router.message(StateFilter(None))
 async def cmd_start(message: types.Message, state: FSMContext):
-    if await future_api.check_user_db(message.from_user.id):
+    # если при старте диалога с ботом пользователь не имеет аккаунт его нужно создать, иначе нельзя пользоваться ботом
+    if future_api.check_user_db(message.from_user.id):
         await message.answer("Меню", reply_markup=keyboard_for_menu())
         await state.set_state(AFKState.logged)
     else:
@@ -21,10 +23,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 @start_router.message(SignInState.signing_in)
 async def signing_in(message: types.Message, state: FSMContext):
+    # регистрация пользователя с валидацией имени
     try:
         if validate.validate_name(message.text):
             name = message.text.split()
-            await future_api.create_new_student_db(name[0], name[1], message.from_user.id)
+            future_api.create_new_student_db(name[0], name[1], message.from_user.id)
             await message.answer("Меню", reply_markup=keyboard_for_menu())
             await state.set_state(AFKState.logged)
     except ValueError as e:
