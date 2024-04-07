@@ -159,5 +159,6 @@ class SqlalchemyLecturesRepository(BaseLecturesRepository):
 
         
 class BaseLabsRepository(ABC):
+    @abstractmethod
     async def get_by_lecture_id(self, lecture_id: int) -> LectureLab | None:
-        raises NotImplementedError
+        raise NotImplementedError

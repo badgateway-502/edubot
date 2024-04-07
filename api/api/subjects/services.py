@@ -34,7 +34,7 @@ class HttpxTelegramService(BaseTelegramService):
     
     async def get_tg_file_id(self, fp: BinaryIO, filename: str) -> str:
         async with AsyncClient() as client:
-            file = {"file": (filename, fp)}
+            file = {"document": (filename, fp)}
             res = await client.post(f"https://api.telegram.org/bot{self.bot_token}/sendDocument?chat_id={self.chat_id}", files=file)
             if res.status_code == 200:
                 return res.json()["result"]["document"]["file_id"]
