@@ -27,6 +27,8 @@ async def list_of_available_lectures(message: types.Message, state: FSMContext):
 
 @subject_router.message(SubjectState.choosing_lecture, F.text.isdigit())
 @subject_router.message(Quiz.finished_quiz, F.text == 'Вернуться к лекции')
+@subject_router.message(Quiz.scalare_question, F.text == 'Обратно к лекции')
+@subject_router.message(Quiz.variants_question, F.text == 'Обратно к лекции')
 @subject_router.message(Lab.lab_opened, F.text == 'К лекции')
 async def some_lecture(message: types.Message, state: FSMContext):
     # выводим все что есть для данной лекции

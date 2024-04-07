@@ -30,7 +30,7 @@ async def post_lab_work(message: types.Message, state: FSMContext):
 
 @lecture_router.message(Lab.lab_opened, F.document)
 async def post_lab_work(message: types.Message):
-    future_api.post_lab(message.document.file_id)
+    future_api.post_lab(message.from_user.id, message.document.file_id)
     await message.reply('Лабораторная работа отправленна', reply_markup=keyboard_to_current_lecture())
 
 
@@ -41,6 +41,7 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
     lecture = future_api.get_lecture_by_number(state_data['subject_id'], state_data['lecture_id'])
     state_data['lecture_quiz'] = lecture['test']['questions']
     state_data['question_id'] = 0
+    state_data['test_id'] = lecture['test']['id']
     state_data['questions_answer'] = {}
 
     questions = state_data['lecture_quiz']
@@ -170,6 +171,6 @@ async def my_subjects_button(message: types.Message, state: FSMContext):
 @lecture_router.message(Quiz.finish_quiz, F.text == 'Закончить тест')
 async def my_subjects_button(message: types.Message, state: FSMContext):
     state_data = await state.get_data()
-    results = future_api.post_quiz_result(state_data['questions_answer'], state_data['lecture_quiz'])
+    results = future_api.post_quiz_result(message.from_user.id, state_data['test_id'], state_data['questions_answer'], state_data['lecture_quiz'])
     await message.answer(f'Ваши результаты:\n{results[0]} из {results[1]}', reply_markup=keyboard_to_current_lecture())
     await state.set_state(Quiz.finished_quiz)
