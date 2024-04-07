@@ -22,3 +22,16 @@ class CreateLabSolution(BaseModel):
 class UpdateStatusLabSolution(BaseModel):
     status: Literal["right", "wrong"]
     comment: str
+
+
+class AddTestSolution(BaseModel):
+    result: int
+    student_id: int
+    test_id: int
+
+
+class ProgressSchema(BaseModel):
+    student_id: int
+    subject_id: int
+    labs_passed: str
+    tests_passed: str

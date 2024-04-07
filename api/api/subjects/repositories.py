@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import query
 
 from .models import Lecture, LectureLab, LectureTest, Subject, TestQuestion
 
@@ -17,6 +18,14 @@ class BaseSubjectsRepository(ABC):
 
     @abstractmethod
     async def get_by_name(self, name: str) -> Subject | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_all_tests(self, subject_id: int) -> list[LectureTest]:
+        raise NotImplementedError
+    
+    @abstractmethod
+    async def get_all_labs(self, subject_id: int) -> list[LectureLab]:
         raise NotImplementedError
 
     @abstractmethod
@@ -44,6 +53,18 @@ class SqlalchemySubjectsRepository(BaseSubjectsRepository):
 
     async def get_by_id(self, subject_id: int) -> Subject | None:
         return await self.session.get(Subject, subject_id)
+
+    async def get_all_tests(self, subject_id: int) -> list[LectureTest]:
+        query = select(LectureTest, Lecture).where(
+            LectureTest.lecture_id == Lecture.id).where(Lecture.subject_id == subject_id)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+    
+    async def get_all_labs(self, subject_id: int) -> list[LectureLab]:
+        query = select(LectureLab, Lecture).where(
+            LectureLab.lecture_id == Lecture.id).where(Lecture.subject_id == subject_id)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
 
     async def get_all(
         self,
@@ -153,7 +174,8 @@ class SqlalchemyLecturesRepository(BaseLecturesRepository):
         await self.session.commit()
 
     async def get_max_number(self, subject_id: int) -> int | None:
-        query = select(func.max(Lecture.number)).where(Lecture.subject_id == subject_id)
+        query = select(func.max(Lecture.number)).where(
+            Lecture.subject_id == subject_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
@@ -184,7 +206,7 @@ class SqlalchemyLabsRepository(BaseLabsRepository):
         query = select(LectureLab).where(LectureLab.lecture_id == lecture_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
-    
+
     async def get_by_id(self, lab_id: int) -> LectureLab | None:
         return await self.session.get(LectureLab, lab_id)
 
@@ -206,7 +228,7 @@ class BaseTestsRepository(ABC):
     @abstractmethod
     async def add(self, test: LectureTest):
         raise NotImplementedError
-    
+
     @abstractmethod
     async def get_by_id(self, test_id: int) -> LectureTest | None:
         raise NotImplementedError
@@ -224,7 +246,7 @@ class SqlalchemyTestsRepository(BaseTestsRepository):
         query = select(LectureTest).where(LectureTest.lecture_id == lecture_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
-    
+
     async def get_by_id(self, test_id: int) -> LectureTest | None:
         return await self.session.get(LectureTest, test_id)
 

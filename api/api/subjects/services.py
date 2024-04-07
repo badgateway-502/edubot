@@ -97,6 +97,14 @@ class SubjectsService:
         if subject.teacher_id != by.id:
             raise SubjectAccessException
         await self.subjects_repo.remove(subject)
+    
+    async def get_all_subjects_tests(self, subject: Subject) -> list[LectureTest]:
+        return await self.subjects_repo.get_all_tests(subject_id=subject.id)
+    
+    async def get_all_subjects_labs(self, subject: Subject) -> list[LectureLab]:
+        return await self.subjects_repo.get_all_labs(subject_id=subject.id)
+    
+
 
 
 class LecturesService:
