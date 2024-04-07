@@ -1,9 +1,11 @@
-from typing import Literal, get_args
-from sqlalchemy.orm import mapped_column, Mapped
+from typing import TYPE_CHECKING, Literal, get_args
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import ForeignKey, Enum
 
 from ..database import Base
-
+if TYPE_CHECKING:
+    from ..students.models import Student
+    from ..subjects.models import LectureLab
 
 TeacherResponseStatus = Literal["right", "wrong", "pending"]
 
@@ -23,3 +25,7 @@ class LabSolution(Base):
         )
     )
     comment: Mapped[str | None]
+
+    lab: Mapped["LectureLab"] = relationship(lazy="selectin")
+    student: Mapped["Student"] = relationship(lazy="selectin")
+

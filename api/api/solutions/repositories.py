@@ -10,6 +10,10 @@ class BaseLabSolutionsRepository(ABC):
     @abstractmethod
     async def add(self, solution: LabSolution):
         raise NotImplementedError
+    
+    @abstractmethod
+    async def get_by_id(self, solution_id: int) -> LabSolution | None:
+        raise NotImplementedError
 
     @abstractmethod
     async def get_all(self, status: TeacherResponseStatus | None = None) -> list[LabSolution]:
@@ -19,6 +23,9 @@ class BaseLabSolutionsRepository(ABC):
 class SqlalchemyLabSolutionsRepository(BaseLabSolutionsRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def get_by_id(self, solution_id: int) -> LabSolution | None:
+        return await self.session.get(LabSolution, solution_id)
 
     async def add(self, solution: LabSolution):
         self.session.add(solution)

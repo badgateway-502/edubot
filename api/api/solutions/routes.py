@@ -1,13 +1,15 @@
+from typing import Literal
 from fastapi import APIRouter, HTTPException, UploadFile, status
 
 from ..students.dependencies import Students
 from ..subjects.dependencies import Lectures
-
+from ..teachers.dependencies import Me
 from .models import TeacherResponseStatus
 from .dependencies import Solutions
 
-from .schemas import LabSolutionSchema
+from .schemas import LabSolutionSchema, UpdateStatusLabSolution
 from ..subjects.services import TelegramException
+
 
 solutions = APIRouter()
 
@@ -26,3 +28,9 @@ async def upload_lab_solution(file: UploadFile, student_id: int, lab_id: int, so
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
 
+
+@solutions.put("/labs/{solution_id}", response_model=LabSolutionSchema)
+async def update_solution_status(solution_id: int, data: UpdateStatusLabSolution, service: Solutions, by: Me):
+    solution = await service.get_lab_solution_by_id(solution_id)
+    await service.update_solution_status(solution, data.status, data.comment, by)
+    return solution
