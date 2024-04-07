@@ -17,7 +17,9 @@ class Subject(Base):
     name: Mapped[str] = mapped_column(unique=True)
     teacher_id: Mapped[int] = mapped_column(ForeignKey("teacher.id"))
     teacher: Mapped["Teacher"] = relationship(lazy="selectin")
-    lectures: Mapped[list["Lecture"]] = relationship(lazy="selectin", cascade="all, delete-orphan")
+    lectures: Mapped[list["Lecture"]] = relationship(
+        lazy="selectin", cascade="all, delete-orphan"
+    )
 
 
 class Lecture(Base):
@@ -41,8 +43,12 @@ class Lecture(Base):
     text_description: Mapped[str | None]
     description_file_id: Mapped[str | None]
     video_file_id: Mapped[str | None]
-    lab: Mapped[Optional["LectureLab"]] = relationship(back_populates="lecture", lazy="selectin", cascade="all, delete-orphan")
-    test: Mapped[Optional["LectureTest"]] = relationship(back_populates="lecture", lazy="selectin", cascade="all, delete-orphan")
+    lab: Mapped[Optional["LectureLab"]] = relationship(
+        back_populates="lecture", lazy="selectin", cascade="all, delete-orphan"
+    )
+    test: Mapped[Optional["LectureTest"]] = relationship(
+        back_populates="lecture", lazy="selectin", cascade="all, delete-orphan"
+    )
     created_at: Mapped[date]
 
 
@@ -63,7 +69,9 @@ class LectureTest(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     lecture_id: Mapped[int] = mapped_column(ForeignKey("lecture.id"), unique=True)
     lecture: Mapped[Lecture] = relationship(back_populates="test")
-    questions: Mapped[list["TestQuestion"]] = relationship(back_populates="test", cascade="all, delete-orphan", lazy="selectin")
+    questions: Mapped[list["TestQuestion"]] = relationship(
+        back_populates="test", cascade="all, delete-orphan", lazy="selectin"
+    )
     result_to_pass: Mapped[float]
 
 
@@ -79,13 +87,17 @@ class TestQuestion(Base):
     weight: Mapped[int]
     question: Mapped[str]
     right_answer: Mapped[str | None]
-    variants: Mapped[list["AnswerVariant"]] = relationship(back_populates="question", cascade="all, delete-orphan", lazy="joined")
-    type: Mapped[QuestionType] = mapped_column(Enum(
-        *get_args(QuestionType),
-        name="campaignstatus",
-        create_constraint=True,
-        validate_strings=True,
-    ))
+    variants: Mapped[list["AnswerVariant"]] = relationship(
+        back_populates="question", cascade="all, delete-orphan", lazy="joined"
+    )
+    type: Mapped[QuestionType] = mapped_column(
+        Enum(
+            *get_args(QuestionType),
+            name="questointype",
+            create_constraint=True,
+            validate_strings=True,
+        )
+    )
 
 
 class AnswerVariant(Base):
@@ -96,4 +108,3 @@ class AnswerVariant(Base):
     question: Mapped[TestQuestion] = relationship(back_populates="variants")
     text: Mapped[str]
     is_right: Mapped[bool]
-

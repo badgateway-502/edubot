@@ -50,7 +50,7 @@ async def get_lectures_service(
             bot_token=settings.bot_token, chat_id=settings.tg_storage_chat_id
         ),
         labs_repo=SqlalchemyLabsRepository(session),
-        tests_repo=SqlalchemyTestsRepository(session)
+        tests_repo=SqlalchemyTestsRepository(session),
     )
 
 

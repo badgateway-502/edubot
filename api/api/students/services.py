@@ -1,4 +1,4 @@
-from api.students.exceptions import (
+from .exceptions import (
     StudentAlreadyExistsException,
     StudentNotFoundException,
 )

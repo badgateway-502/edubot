@@ -168,6 +168,10 @@ class BaseLabsRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def get_by_id(self, lab_id: int) -> LectureLab | None:
+        raise NotImplementedError
+
+    @abstractmethod
     async def remove(self, lab: LectureLab):
         raise NotImplementedError
 
@@ -180,6 +184,9 @@ class SqlalchemyLabsRepository(BaseLabsRepository):
         query = select(LectureLab).where(LectureLab.lecture_id == lecture_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+    
+    async def get_by_id(self, lab_id: int) -> LectureLab | None:
+        return await self.session.get(LectureLab, lab_id)
 
     async def add(self, lab: LectureLab):
         self.session.add(lab)
@@ -199,6 +206,10 @@ class BaseTestsRepository(ABC):
     @abstractmethod
     async def add(self, test: LectureTest):
         raise NotImplementedError
+    
+    @abstractmethod
+    async def get_by_id(self, test_id: int) -> LectureTest | None:
+        raise NotImplementedError
 
     @abstractmethod
     async def remove(self, test: LectureTest):
@@ -213,6 +224,9 @@ class SqlalchemyTestsRepository(BaseTestsRepository):
         query = select(LectureTest).where(LectureTest.lecture_id == lecture_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+    
+    async def get_by_id(self, test_id: int) -> LectureTest | None:
+        return await self.session.get(LectureTest, test_id)
 
     async def add(self, test: LectureTest):
         self.session.add(test)

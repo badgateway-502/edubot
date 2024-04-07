@@ -22,7 +22,6 @@ class LectureTestException(ItemException):
     item = "lecture test"
 
 
-
 class LectureException(ItemException):
     item = "lecture"
 
@@ -62,5 +61,8 @@ class LectureLabAlreadyExistsException(LectureLabException, ItemAlreadyExistsExc
 class LectureTestNotFoundException(LectureTestException, ItemNotFoundException):
     pass
 
-class LectureTestAlreadyExistsException(LectureTestException, ItemAlreadyExistsException):
+
+class LectureTestAlreadyExistsException(
+    LectureTestException, ItemAlreadyExistsException
+):
     pass

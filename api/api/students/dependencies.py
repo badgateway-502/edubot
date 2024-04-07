@@ -1,9 +1,9 @@
 from typing import Annotated
 
-from api.students.repositories import SqlalchemyStudentsRepository
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .repositories import SqlalchemyStudentsRepository
 from .services import StudentsService
 from ..database import get_database_session
 

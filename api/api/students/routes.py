@@ -1,5 +1,5 @@
 from typing import Literal
-from api.teachers.dependencies import Me
+from ..teachers.dependencies import Me
 from .dependencies import Students
 from fastapi import APIRouter
 

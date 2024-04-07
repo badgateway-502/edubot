@@ -5,6 +5,7 @@ from api.subjects.exceptions import TelegramException
 from fastapi import APIRouter, HTTPException, UploadFile, status
 
 from .schemas import (
+    CreateLab,
     CreateLecture,
     CreateLectureTest,
     LabSchema,
@@ -15,6 +16,7 @@ from .schemas import (
     SubjectUpdate,
     UpdateLab,
     UpdateLecture,
+    UpdateLectureTestSchema,
 )
 from ..teachers.dependencies import Me
 from .dependencies import CurrentSubject, Subjects, Lectures
@@ -136,6 +138,15 @@ async def remove_lecture(
     return "done"
 
 
+@subjects.post(
+    "/{subject_id}/lectures/{number}/lab",
+    response_model=LabSchema,
+    tags=["lectures", "labs"],
+)
+async def add_lecture_lab(data: CreateLab, subject: CurrentSubject, number: int, service: Lectures, by: Me):
+    lecture = await service.get_lecture_by_number(subject, number)
+    return await service.add_lecture_lab(lecture, by, data.title, data.text_description)
+
 @subjects.get(
     "/{subject_id}/lectures/{number}/lab",
     response_model=LabSchema,
@@ -195,7 +206,8 @@ async def attach_file_to_lecture_lab(
     return lab
 
 
-@subjects.get("/{subject_id}/lectures/{number}/test/",
+@subjects.get(
+    "/{subject_id}/lectures/{number}/test/",
     response_model=LectureTestSchema,
     tags=["lectures", "test"],
 )
@@ -204,30 +216,51 @@ async def get_lecture_test(subject: CurrentSubject, number: int, service: Lectur
     return await service.get_lecture_test(lecture)
 
 
-@subjects.post("/{subject_id}/lectures/{number}/test/",
+@subjects.post(
+    "/{subject_id}/lectures/{number}/test/",
     response_model=LectureTestSchema,
     tags=["lectures", "test"],
 )
-async def create_lecture_test(data: CreateLectureTest ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+async def create_lecture_test(
+    data: CreateLectureTest,
+    subject: CurrentSubject,
+    number: int,
+    service: Lectures,
+    by: Me,
+):
     lecture = await service.get_lecture_by_number(subject, number)
     return await service.create_lecture_test(lecture, by, data.result_to_pass)
 
 
-@subjects.put("/{subject_id}/lectures/{number}/test/",
+@subjects.put(
+    "/{subject_id}/lectures/{number}/test/",
     response_model=LectureTestSchema,
     tags=["lectures", "test"],
 )
-async def update_lecture_test(data: LectureTestSchema ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+async def update_lecture_test(
+    data: UpdateLectureTestSchema,
+    subject: CurrentSubject,
+    number: int,
+    service: Lectures,
+    by: Me,
+):
     lecture = await service.get_lecture_by_number(subject, number)
     test = await service.get_lecture_test(lecture)
     return await service.update_lecture_test(test, data, by)
 
 
-@subjects.delete("/{subject_id}/lectures/{number}/test/",
+@subjects.delete(
+    "/{subject_id}/lectures/{number}/test/",
     response_model=Literal["done"],
     tags=["lectures", "test"],
 )
-async def remove_lecture_test(data: LectureTestSchema ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+async def remove_lecture_test(
+    data: LectureTestSchema,
+    subject: CurrentSubject,
+    number: int,
+    service: Lectures,
+    by: Me,
+):
     lecture = await service.get_lecture_by_number(subject, number)
     test = await service.get_lecture_test(lecture)
     await service.remove_lecture_test(test, by)

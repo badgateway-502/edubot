@@ -73,11 +73,18 @@ class CreateLectureTest(BaseModel):
     result_to_pass: float = Field(ge=0, le=1)
 
 
+class UpdateLectureTestSchema(BaseModel):
+    result_to_pass: float = Field(ge=0, le=1)
+    questions: list[Question]
+
+
 class LectureTestSchema(BaseModel):
     model_config = {"from_attributes": True}
 
+    id: int
     result_to_pass: float = Field(ge=0, le=1)
     questions: list[Question]
+
 
 
 class LectureSchema(BaseModel):
