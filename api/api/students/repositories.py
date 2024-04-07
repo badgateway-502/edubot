@@ -14,11 +14,11 @@ class BaseStudentsRepository(ABC):
     @abstractmethod
     async def get_by_id(self, student_id: int) -> Student | None:
         raise NotImplementedError
-    
+
     @abstractmethod
     async def get_all(self, offset: int | None = None, limit: int | None = None):
         raise NotImplementedError
-    
+
     @abstractmethod
     async def remove(self, student: Student):
         raise NotImplementedError
@@ -36,7 +36,9 @@ class SqlalchemyStudentsRepository(BaseStudentsRepository):
     async def get_by_id(self, student_id: int) -> Student | None:
         return await self.session.get(Student, student_id)
 
-    async def get_all(self, offset: int | None = None, limit: int | None = None) -> list[Student]:
+    async def get_all(
+        self, offset: int | None = None, limit: int | None = None
+    ) -> list[Student]:
         query = select(Student)
         if offset is not None:
             query = query.offset(offset)
@@ -44,7 +46,7 @@ class SqlalchemyStudentsRepository(BaseStudentsRepository):
             query = query.limit(limit)
         result = await self.session.execute(query)
         return list(result.scalars().all())
-    
+
     async def remove(self, student: Student):
         await self.session.delete(student)
         await self.session.commit()

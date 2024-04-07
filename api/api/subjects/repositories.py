@@ -83,7 +83,7 @@ class BaseLecturesRepository(ABC):
     @abstractmethod
     async def get_by_number(self, subject_id: int, number: int) -> Lecture | None:
         raise NotImplementedError
-    
+
     @abstractmethod
     async def get_max_number(self, subject_id: int) -> int | None:
         raise NotImplementedError
@@ -151,13 +151,13 @@ class SqlalchemyLecturesRepository(BaseLecturesRepository):
     async def remove(self, lecture: Lecture) -> None:
         await self.session.delete(lecture)
         await self.session.commit()
-    
+
     async def get_max_number(self, subject_id: int) -> int | None:
         query = select(func.max(Lecture.number)).where(Lecture.subject_id == subject_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-        
+
 class BaseLabsRepository(ABC):
     @abstractmethod
     async def get_by_lecture_id(self, lecture_id: int) -> LectureLab | None:
@@ -165,6 +165,10 @@ class BaseLabsRepository(ABC):
 
     @abstractmethod
     async def add(self, lab: LectureLab):
+        raise NotImplementedError
+    
+    @abstractmethod
+    async def remove(self, lab: LectureLab):
         raise NotImplementedError
 
 
@@ -181,3 +185,7 @@ class SqlalchemyLabsRepository(BaseLabsRepository):
         self.session.add(lab)
         await self.session.commit()
         await self.session.refresh(lab)
+    
+    async def remove(self, lab: LectureLab):
+        await self.session.delete(lab)
+        await self.session.commit()

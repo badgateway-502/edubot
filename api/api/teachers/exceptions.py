@@ -1,4 +1,8 @@
-from ..exceptions import ItemException, ItemNotFoundException, ItemAlreadyExistsException
+from ..exceptions import (
+    ItemException,
+    ItemNotFoundException,
+    ItemAlreadyExistsException,
+)
 
 
 class AuthenticationException(Exception):
@@ -8,6 +12,7 @@ class AuthenticationException(Exception):
 
 class TeacherException(ItemException):
     item = "tacher"
+
 
 class TeacherNotFoundException(TeacherException, ItemNotFoundException):
     pass

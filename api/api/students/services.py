@@ -6,6 +6,7 @@ from .repositories import BaseStudentsRepository
 from .models import Student
 from ..teachers.models import Teacher
 
+
 class StudentsService:
     def __init__(self, students_repo: BaseStudentsRepository):
         self.students_repo = students_repo
@@ -26,6 +27,6 @@ class StudentsService:
 
     async def get_all_students(self) -> list[Student]:
         return await self.students_repo.get_all()
-    
+
     async def remove_student(self, student: Student, _by: Teacher):
         await self.students_repo.remove(student)

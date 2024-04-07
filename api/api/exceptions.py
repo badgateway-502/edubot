@@ -6,7 +6,7 @@ class ItemException(Exception):
 
 
 def format_refs(refs: dict[str, str]) -> str:
-    return ' '.join(f"{key}={value!r}" for key, value in refs.items())
+    return " ".join(f"{key}={value!r}" for key, value in refs.items())
 
 
 class ItemNotFoundException(ItemException):

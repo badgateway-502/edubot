@@ -1,25 +1,23 @@
 from abc import ABC, abstractmethod
 from typing import BinaryIO
-from httpx import AsyncClient
-
 from datetime import date
 
-from pydantic import NonNegativeFloat
+from httpx import AsyncClient
+
 from .exceptions import (
     LectureAccessException,
     LectureAlreadyExistsException,
+    LectureLabAlreadyExistsException,
+    LectureLabNotFoundException,
     LectureNotFoundException,
     SubjectAccessException,
     SubjectAlreadyExistsException,
     SubjectNotFoundException,
     TelegramException,
 )
-from .models import Lecture, Subject
-from .repositories import BaseSubjectsRepository, BaseLecturesRepository
+from .models import Lecture, LectureLab, Subject
+from .repositories import BaseLabsRepository, BaseSubjectsRepository, BaseLecturesRepository
 from ..teachers.models import Teacher
-
-
-from httpx._types import RequestFiles
 
 
 class BaseTelegramService(ABC):
@@ -46,7 +44,7 @@ class HttpxTelegramService(BaseTelegramService):
 class SubjectsService:
     def __init__(self, subjects_repo: BaseSubjectsRepository):
         self.subjects_repo = subjects_repo
-
+        
     async def get_subjects(self, teacher_id: int | None = None) -> list[Subject]:
         return await self.subjects_repo.get_all(teacher_id=teacher_id)
 
@@ -83,9 +81,10 @@ class SubjectsService:
 
 
 class LecturesService:
-    def __init__(self, lectures_repo: BaseLecturesRepository, telegram_service: BaseTelegramService) -> None:
+    def __init__(self, lectures_repo: BaseLecturesRepository, telegram_service: BaseTelegramService, labs_repo: BaseLabsRepository) -> None:
         self.lectures_repo = lectures_repo
         self.telegram_service = telegram_service
+        self.labs_repo = labs_repo
 
     async def create_new_lecture(
         self, subject: Subject, title: str, text_description: str | None, by: Teacher
@@ -143,5 +142,39 @@ class LecturesService:
             lecture.text_description = text_description
         await self.lectures_repo.add(lecture)
 
-    async def get_lecture_lab(self, lecture: Lecture):
-        ...
+    async def get_lecture_lab(self, lecture: Lecture) -> LectureLab:
+        lab = await self.labs_repo.get_by_lecture_id(lecture.id)
+        if lab is None:
+            raise LectureLabNotFoundException(lecture_id=str(lecture.id))
+        return lab
+    
+    async def add_lecture_lab(self, lecture: Lecture, by: Teacher, title: str, text_description: str | None) -> LectureLab:
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
+        lab = await self.labs_repo.get_by_lecture_id(lecture.id)
+        if lab is not None:
+            raise LectureLabAlreadyExistsException(lecture_id=str(lecture.id))
+        lab = LectureLab(lecture_id=lecture.id, title=title, text_description=text_description)
+        await self.labs_repo.add(lab)
+        return lab
+    
+    async def remove_lecture_lab(self, lab: LectureLab, by: Teacher):
+        if lab.lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lab.lecture.id))
+        await self.labs_repo.remove(lab)
+    
+    async def update_lecture_lab(self, lab: LectureLab, by: Teacher, title: str | None, text_description: str | None):
+        if lab.lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lab.lecture.id))
+        if title is not None:
+            lab.title = title
+        if text_description is not None:
+            lab.text_description = text_description
+        await self.labs_repo.add(lab)
+
+    async def attach_file_to_lecture_lab(self, lab: LectureLab, file: BinaryIO, filename: str, by: Teacher):
+        if lab.lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lab.lecture.id))
+        file_id = await self.telegram_service.get_tg_file_id(file, filename)
+        lab.description_file_id = file_id
+        await self.labs_repo.add(lab)
