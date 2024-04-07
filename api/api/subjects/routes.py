@@ -59,7 +59,7 @@ async def create_new_lecture(data: CreateLecture, subject: CurrentSubject, servi
 async def upload_description_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
-        await service.add_description_file_to_lecture(lecture=lecture, file=file.file)
+        await service.add_description_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown")
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
     return lecture
@@ -69,7 +69,7 @@ async def upload_description_file_to_lecture(subject: CurrentSubject, number: in
 async def upload_video_file_to_lecture(subject: CurrentSubject, number: int, file: UploadFile, service: Lectures):
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
-        await service.add_video_file_to_lecture(lecture=lecture, file=file.file)
+        await service.add_video_file_to_lecture(lecture=lecture, file=file.file, filename=file.filename or "unknown")
     except TelegramException as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error") from exc
     return lecture

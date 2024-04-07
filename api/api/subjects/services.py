@@ -18,9 +18,12 @@ from .repositories import BaseSubjectsRepository, BaseLecturesRepository
 from ..teachers.models import Teacher
 
 
+from httpx._types import RequestFiles
+
+
 class BaseTelegramService(ABC):
     @abstractmethod
-    async def get_tg_file_id(self, fp: BinaryIO) -> str:
+    async def get_tg_file_id(self, fp: BinaryIO, filename: str) -> str:
         raise NotImplementedError
 
 
@@ -29,9 +32,9 @@ class HttpxTelegramService(BaseTelegramService):
         self.bot_token = bot_token
         self.chat_id = chat_id
     
-    async def get_tg_file_id(self, fp: BinaryIO) -> str:
+    async def get_tg_file_id(self, fp: BinaryIO, filename: str) -> str:
         async with AsyncClient() as client:
-            file = {"document": fp}
+            file = {"file": (filename, fp)}
             res = await client.post(f"https://api.telegram.org/bot{self.bot_token}/sendDocument?chat_id={self.chat_id}", files=file)
             if res.status_code == 200:
                 return res.json()["result"]["document"]["file_id"]
@@ -106,13 +109,13 @@ class LecturesService:
             raise LectureNotFoundException(subject=subject.name, number=str(number))
         return lecture
     
-    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO):
-        file_id = await self.telegram_service.get_tg_file_id(file)
+    async def add_description_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str):
+        file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.description_file_id = file_id
         await self.lectures_repo.add(lecture)
 
-    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO):
-        file_id = await self.telegram_service.get_tg_file_id(file)
+    async def add_video_file_to_lecture(self, lecture: Lecture, file: BinaryIO, filename: str):
+        file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lecture.video_file_id = file_id
         await self.lectures_repo.add(lecture)
     

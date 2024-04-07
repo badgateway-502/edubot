@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import Lecture, Subject
+from .models import Lecture, LectureLab, Subject
 
 
 class BaseSubjectsRepository(ABC):
@@ -158,3 +158,6 @@ class SqlalchemyLecturesRepository(BaseLecturesRepository):
         return result.scalar_one_or_none()
 
         
+class BaseLabsRepository(ABC):
+    async def get_by_lecture_id(self, lecture_id: int) -> LectureLab | None:
+        raises NotImplementedError
