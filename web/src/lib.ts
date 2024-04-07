@@ -7,6 +7,8 @@ export interface SessionData {
   isPro?:boolean
   isBlocked?:boolean
   isLoggedIn:boolean
+  bearer:string
+  token:string
 }
 
 export const defaultSession:SessionData = {

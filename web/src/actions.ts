@@ -6,9 +6,6 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-let email = "john@com";
-let password = "1";
-let isPro = true;
 let isBlocked = true;
 
 export const getSession = async () => {
@@ -17,10 +14,7 @@ export const getSession = async () => {
   if (!session.isLoggedIn) {
     session.isLoggedIn = defaultSession.isLoggedIn;
   }
-
-  // CHECK THE USER IN THE DB
   session.isBlocked = isBlocked;
-  session.isPro = isPro;
 
   return session;
 };
@@ -34,16 +28,39 @@ export const login = async (
   const formEmail = formData.get("email") as string;
   const formPassword = formData.get("password") as string;
 
-  // CHECK USER IN THE DB
-  // const user = await db.getUser({email,password})
+  let response = await fetch('http://127.0.0.1:8000/teachers/login/', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `username=${formEmail}&password=${formPassword}`
+  });
 
-  if (formEmail !== email || formPassword !== password) {
+  let response_json = await response.json()
+
+  if (response.status == 422){
+    return { error: "Неверный формат почты" };
+  }
+  else if (response.status != 200) {
     return { error: "Неверные данные" };
   }
 
-  session.userId = "1";
+  let response_me = await fetch('http://127.0.0.1:8000/teachers/me', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `${response_json['token_type']} ${response_json['access_token']}`
+    },
+  });
+
+  session.bearer = response_json['token_type']
+  session.token = response_json['access_token']
+
+  response_json = await response_me.json()
+
+  session.userId = response_json['id'];
   session.username = formEmail;
-  session.isPro = isPro;
   session.isLoggedIn = true;
 
   await session.save();
@@ -56,28 +73,6 @@ export const logout = async () => {
   redirect("/");
 };
 
-// export const changePremium = async () => {
-//   const session = await getSession();
-
-//   isPro = !session.isPro;
-//   session.isPro = isPro;
-//   await session.save();
-//   revalidatePath("/profile");
-// };
-
-// export const changeUsername = async (formData: FormData) => {
-//   const session = await getSession();
-
-//   const newUsername = formData.get("username") as string;
-
-//   email = newUsername;
-
-//   session.username = email;
-//   await session.save();
-//   revalidatePath("/profile");
-// };
-
-
 export const create_teacher = async (
   prevState: { error: undefined | string },
   formData: FormData
@@ -85,16 +80,67 @@ export const create_teacher = async (
 
   const formEmail = formData.get("email") as string;
   const formPassword = formData.get("password") as string;
+  const formFirstName = formData.get("name") as string;
+  const formLastname = formData.get("surname") as string;
 
-  // CHECK USER IN THE DB
-  // const user = await db.getTeacher({email})
-  const emails = ['john@com', 'polko@mail', 'vsesneshka@kool']
+  let user = {
+    'email': formEmail,
+    'firstname': formFirstName,
+    'lastname': formLastname,
+    'password': formPassword,
+  };
 
-  if (emails.includes(formEmail)) {
+  let response = await fetch('http://127.0.0.1:8000/teachers/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'accept': 'application/json'
+    },
+    body: JSON.stringify(user)
+  });
+
+  if (response.status == 422){
+    return { error: "Неверная почта" };
+  }
+  else if (response.status != 200) {
     return { error: "Преподаватель с таким email существует" };
   }
 
-  // POST to db
-  // db.create(teacher())
   redirect("/");
 };
+
+export const edit_lecture = async(  
+  prevState: { error: undefined | string },
+  formData: FormData
+  ) => {
+  const formName = formData.get("name") as string;
+  const formText = formData.get("text") as string;
+  const formVideo = formData.get("video");
+  const formPdf = formData.get("pdf");
+
+  let user = {
+    'title': formName,
+    'text_description': formText,
+  };
+
+  let response = await fetch(`http://127.0.0.1:8000/subjects/2/lectures/2`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'accept': 'application/json'
+    },
+    body: JSON.stringify(user)
+  });
+
+}
+export const delete_lecture = async(id:number, subject_id:number) => {
+  let session = await getSession()
+  let a = await fetch(`http://127.0.0.1:8000/subjects/${subject_id}/lectures/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'accept': 'application/json',
+      'Authorization': `${session.bearer} ${session.token}`
+    },
+  });
+  console.log(a)
+}

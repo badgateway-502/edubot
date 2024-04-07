@@ -9,17 +9,19 @@ const StudentsPage = async () => {
     redirect("/login");
   }
 
-  const students = [
-    [0, 'Миша Стркнников'],
-    [1, 'Павел Стркнников'],
-    [2, 'Дмитрий Скрынник'],
-    [3, 'Владимир Сыктывкар'],
-  ]
+  let response = await fetch('http://127.0.0.1:8000/students/', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  let students: [] = await response.json()
 
   const student_list = students.map((student) => {
     return (
-      <li key={student[0]} style={{listStyleType: 'none'}}>
-          <Link href={'students/' + student[0]}>{student[1]}</Link>
+      <li key={student["id"]} style={{listStyleType: 'none'}}>
+          <Link href={'students/' + student["id"]}>{student["firstname"]} {student["lastname"]}</Link>
       </li>
   )
   })
