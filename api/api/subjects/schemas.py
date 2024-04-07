@@ -1,6 +1,7 @@
 from datetime import date
+from typing import Literal
 from api.database import Base
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from ..teachers.schemas import TeacherPublic
 
 
@@ -42,6 +43,8 @@ class UpdateLab(BaseModel):
 
 
 class LabSchema(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     lecture_id: int
     title: str
@@ -61,3 +64,48 @@ class LectureSchema(BaseModel):
     description_file_id: str | None
     video_file_id: str | None
     created_at: date
+
+
+class ScalarQuestion(BaseModel):
+    model_config = {"from_attributes": True}
+
+    question: str
+    right_answer: str
+    type: Literal["scalar"]
+
+
+class ModerQuestion(BaseModel):
+    model_config = {"from_attributes": True}
+
+    question: str
+    type: Literal["moder"]
+    
+
+class ModerFileQuestion(BaseModel):
+    model_config = {"from_attributes": True}
+
+    question: str
+    type: Literal["moderfile"]
+
+
+class AnswerVariant(BaseModel):
+    model_config = {"from_attributes": True}
+
+    text: str
+    is_right: bool
+
+
+class VariantQuestion(BaseModel):
+    model_config = {"from_attributes": True}
+
+    question: str
+    type: Literal["moder"]
+    variants: list[AnswerVariant]
+
+
+
+class LectureTestSchema(BaseModel):
+    model_config = {"from_attributes": True}
+
+    result_to_pass: float = Field(ge=0, le=1)
+    questions: list[ScalarQuestion | ModerQuestion | ModerQuestion | VariantQuestion]
