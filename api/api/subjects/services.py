@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from operator import le
 from typing import BinaryIO
 from datetime import date
 
+from api.subjects.schemas import LectureTestSchema
 from httpx import AsyncClient
 
 from .exceptions import (
@@ -10,16 +12,19 @@ from .exceptions import (
     LectureLabAlreadyExistsException,
     LectureLabNotFoundException,
     LectureNotFoundException,
+    LectureTestAlreadyExistsException,
+    LectureTestNotFoundException,
     SubjectAccessException,
     SubjectAlreadyExistsException,
     SubjectNotFoundException,
     TelegramException,
 )
-from .models import Lecture, LectureLab, Subject
+from .models import AnswerVariant, Lecture, LectureLab, LectureTest, Subject, TestQuestion
 from .repositories import (
     BaseLabsRepository,
     BaseSubjectsRepository,
     BaseLecturesRepository,
+    BaseTestsRepository,
 )
 from ..teachers.models import Teacher
 
@@ -93,10 +98,12 @@ class LecturesService:
         lectures_repo: BaseLecturesRepository,
         telegram_service: BaseTelegramService,
         labs_repo: BaseLabsRepository,
+        tests_repo: BaseTestsRepository
     ) -> None:
         self.lectures_repo = lectures_repo
         self.telegram_service = telegram_service
         self.labs_repo = labs_repo
+        self.tests_repo = tests_repo
 
     async def create_new_lecture(
         self, subject: Subject, title: str, text_description: str | None, by: Teacher
@@ -216,3 +223,54 @@ class LecturesService:
         file_id = await self.telegram_service.get_tg_file_id(file, filename)
         lab.description_file_id = file_id
         await self.labs_repo.add(lab)
+    
+    async def get_lecture_test(self, lecture: Lecture) -> LectureTest:
+        test = await self.tests_repo.get_by_lecture_id(lecture.id)
+        if test is None:
+            raise LectureTestNotFoundException(lecture_id=str(lecture.id))
+        return test
+    
+    async def create_lecture_test(self, lecture: Lecture, by: Teacher, result_to_pass: float) -> LectureTest:
+        if lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(lecture.id))
+        test = await self.tests_repo.get_by_lecture_id(lecture.id)
+        if test is not None:
+            raise LectureTestAlreadyExistsException(lecture_id=str(lecture.id))
+        test = LectureTest(lecture_id=lecture.id, result_to_pass=result_to_pass)
+        await self.tests_repo.add(test)
+        return test
+    
+    async def update_lecture_test(self, test: LectureTest, data: LectureTestSchema, by: Teacher) -> LectureTest:
+        if test.lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(test.lecture.id))
+        lecture_id = test.lecture_id
+        await self.tests_repo.remove(test)
+        questions = []
+        for data_q in data.questions:
+            question  = TestQuestion(
+                question=data_q.question,
+                type=data_q.type,
+                weight=data_q.weight,
+            )
+            if data_q.type == "variant" and data_q.variants is not None:
+                question.variants = [
+                    AnswerVariant(text=v.text, is_right=v.is_right) for v in data_q.variants
+                ]
+            if data_q.type == "scalar" and data_q.right_answer is not None:
+                question.right_answer = data_q.right_answer
+            questions.append(question)
+        test = LectureTest(
+            lecture_id=lecture_id,
+            result_to_pass=data.result_to_pass,
+            questions=questions
+        )
+        await self.tests_repo.add(test)
+        return test
+    
+
+    async def remove_lecture_test(self, test: LectureTest, by: Teacher):
+        if test.lecture.subject.teacher_id != by.id:
+            raise LectureAccessException(id=str(test.lecture.id))
+        await self.tests_repo.remove(test)
+
+

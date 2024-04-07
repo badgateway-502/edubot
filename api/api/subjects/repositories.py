@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import Lecture, LectureLab, Subject
+from .models import Lecture, LectureLab, LectureTest, Subject, TestQuestion
 
 
 class BaseSubjectsRepository(ABC):
@@ -188,4 +188,37 @@ class SqlalchemyLabsRepository(BaseLabsRepository):
 
     async def remove(self, lab: LectureLab):
         await self.session.delete(lab)
+        await self.session.commit()
+
+
+class BaseTestsRepository(ABC):
+    @abstractmethod
+    async def get_by_lecture_id(self, lecture_id: int) -> LectureTest | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def add(self, test: LectureTest):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def remove(self, test: LectureTest):
+        raise NotImplementedError
+
+
+class SqlalchemyTestsRepository(BaseTestsRepository):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_lecture_id(self, lecture_id: int) -> LectureTest | None:
+        query = select(LectureTest).where(LectureTest.lecture_id == lecture_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def add(self, test: LectureTest):
+        self.session.add(test)
+        await self.session.commit()
+        await self.session.refresh(test)
+
+    async def remove(self, test: LectureTest):
+        await self.session.delete(test)
         await self.session.commit()

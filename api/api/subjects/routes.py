@@ -6,8 +6,10 @@ from fastapi import APIRouter, HTTPException, UploadFile, status
 
 from .schemas import (
     CreateLecture,
+    CreateLectureTest,
     LabSchema,
     LectureSchema,
+    LectureTestSchema,
     SubjectSchema,
     CreateSubject,
     SubjectUpdate,
@@ -191,3 +193,42 @@ async def attach_file_to_lecture_lab(
             status_code=status.HTTP_502_BAD_GATEWAY, detail="external service error"
         ) from exc
     return lab
+
+
+@subjects.get("/{subject_id}/lectures/{number}/test/",
+    response_model=LectureTestSchema,
+    tags=["lectures", "test"],
+)
+async def get_lecture_test(subject: CurrentSubject, number: int, service: Lectures):
+    lecture = await service.get_lecture_by_number(subject, number)
+    return await service.get_lecture_test(lecture)
+
+
+@subjects.post("/{subject_id}/lectures/{number}/test/",
+    response_model=LectureTestSchema,
+    tags=["lectures", "test"],
+)
+async def create_lecture_test(data: CreateLectureTest ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+    lecture = await service.get_lecture_by_number(subject, number)
+    return await service.create_lecture_test(lecture, by, data.result_to_pass)
+
+
+@subjects.put("/{subject_id}/lectures/{number}/test/",
+    response_model=LectureTestSchema,
+    tags=["lectures", "test"],
+)
+async def update_lecture_test(data: LectureTestSchema ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+    lecture = await service.get_lecture_by_number(subject, number)
+    test = await service.get_lecture_test(lecture)
+    return await service.update_lecture_test(test, data, by)
+
+
+@subjects.delete("/{subject_id}/lectures/{number}/test/",
+    response_model=Literal["done"],
+    tags=["lectures", "test"],
+)
+async def remove_lecture_test(data: LectureTestSchema ,subject: CurrentSubject, number: int, service: Lectures, by: Me):
+    lecture = await service.get_lecture_by_number(subject, number)
+    test = await service.get_lecture_test(lecture)
+    await service.remove_lecture_test(test, by)
+    return "done"

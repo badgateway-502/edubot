@@ -8,6 +8,7 @@ from .repositories import (
     SqlalchemyLabsRepository,
     SqlalchemySubjectsRepository,
     SqlalchemyLecturesRepository,
+    SqlalchemyTestsRepository,
 )
 from .services import HttpxTelegramService, LecturesService, SubjectsService
 from ..database import get_database_session
@@ -49,6 +50,7 @@ async def get_lectures_service(
             bot_token=settings.bot_token, chat_id=settings.tg_storage_chat_id
         ),
         labs_repo=SqlalchemyLabsRepository(session),
+        tests_repo=SqlalchemyTestsRepository(session)
     )
 
 

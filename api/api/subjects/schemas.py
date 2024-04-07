@@ -52,6 +52,34 @@ class LabSchema(BaseModel):
     description_file_id: str | None
 
 
+class AnswerVariant(BaseModel):
+    model_config = {"from_attributes": True}
+
+    text: str
+    is_right: bool
+
+
+class Question(BaseModel):
+    model_config = {"from_attributes": True}
+
+    question: str
+    weight: int
+    type: Literal["moder", "scalar", "moderfile", "variant"]
+    right_answer: str | None
+    variants: list[AnswerVariant] | None
+
+
+class CreateLectureTest(BaseModel):
+    result_to_pass: float = Field(ge=0, le=1)
+
+
+class LectureTestSchema(BaseModel):
+    model_config = {"from_attributes": True}
+
+    result_to_pass: float = Field(ge=0, le=1)
+    questions: list[Question]
+
+
 class LectureSchema(BaseModel):
     model_config = {"from_attributes": True}
 
@@ -60,51 +88,8 @@ class LectureSchema(BaseModel):
     number: int
     title: str
     lab: LabSchema | None
+    test: LectureTestSchema | None
     text_description: str | None
     description_file_id: str | None
     video_file_id: str | None
     created_at: date
-
-
-class ScalarQuestion(BaseModel):
-    model_config = {"from_attributes": True}
-
-    question: str
-    right_answer: str
-    type: Literal["scalar"]
-
-
-class ModerQuestion(BaseModel):
-    model_config = {"from_attributes": True}
-
-    question: str
-    type: Literal["moder"]
-
-
-class ModerFileQuestion(BaseModel):
-    model_config = {"from_attributes": True}
-
-    question: str
-    type: Literal["moderfile"]
-
-
-class AnswerVariant(BaseModel):
-    model_config = {"from_attributes": True}
-
-    text: str
-    is_right: bool
-
-
-class VariantQuestion(BaseModel):
-    model_config = {"from_attributes": True}
-
-    question: str
-    type: Literal["moder"]
-    variants: list[AnswerVariant]
-
-
-class LectureTestSchema(BaseModel):
-    model_config = {"from_attributes": True}
-
-    result_to_pass: float = Field(ge=0, le=1)
-    questions: list[ScalarQuestion | ModerQuestion | ModerQuestion | VariantQuestion]
