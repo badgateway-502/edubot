@@ -69,18 +69,22 @@ def get_subjects_titles() -> SubjectTitle_IdType:
 # получить информацию о пользователе - ФИ, успеваемость, текущие лекции.
 def get_info_user_db(user_id: int):
     headers = {'accept': 'application/json'}
-    user = requests.get(f'http://127.0.0.1:8000/students{user_id}', headers=headers)
+    user = requests.get(f'http://127.0.0.1:8000/students/{user_id}', headers=headers)
     if user.status_code == 200:
         user = user.json()
-        available_subjects = get_info_about_subjects_db(user_id)
-        academic_performance = {}
-        # for subject in available_subjects:
-        #     academic_performance[subject[1]]: float = subject[3]
 
-        dicto = {  # TODO
+        headers = {'accept': 'application/json'}
+        performance = requests.get(f'http://127.0.0.1:8000/solutions/progress?student_id=840307055', headers=headers)
+        performance = performance.json()
+        bebra = {
+            'Пройдено лабораторных работ': performance['labs_passed'],
+            'Пройдено тестов': performance['tests_passed']
+        }
+
+        dicto = {
             'name': user['firstname'],
             'surname': user['lastname'],
-            'academic_performance': academic_performance
+            'academic_performance': bebra
         }
         return dicto
     else:
@@ -98,7 +102,7 @@ def create_new_student_db(name: str, surname: str, user_id: int):
     requests.post('http://127.0.0.1:8000/students/', json=params, headers=headers)
 
 
-def post_quiz_result(answers: Dict[int, str], questions) -> (int, int):
+def post_quiz_result(user_id, test_id, answers: Dict[int, str], questions) -> (int, int):
 
     weights = 0
     obsheee = 0
@@ -114,13 +118,19 @@ def post_quiz_result(answers: Dict[int, str], questions) -> (int, int):
         if k in answers.keys() and answers[k] == right_text:
             weights += question['weight']
         obsheee += question['weight']
+
+    params = {
+        "result": weights,
+        "student_id": user_id,
+        "test_id": test_id,
+    }
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
+    requests.post('http://127.0.0.1:8000/solutions/tests', json=params, headers=headers)
+
     return weights, obsheee
 
-def get_lab_work(subject, lecture_id):
-    # TODO
-    return
 
+def post_lab(user_id, lab_id):
+    headers = {'accept': 'application/json', 'Content-Type': 'multipart/form-data'}
+    requests.post(f'http://127.0.0.1:8000/solutions/labs?student_id={user_id}&lab_id={lab_id}', headers=headers)
 
-def post_lab(id):
-    # todo
-    pass
