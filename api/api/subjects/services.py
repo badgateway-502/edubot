@@ -37,6 +37,7 @@ from ..teachers.models import Teacher
 
 
 class BaseTelegramService(ABC):
+    """interface for telegram service getting file id"""
     @abstractmethod
     async def get_tg_file_id(self, fp: BinaryIO, filename: str) -> str:
         raise NotImplementedError
@@ -61,6 +62,8 @@ class HttpxTelegramService(BaseTelegramService):
 
 
 class SubjectsService:
+    """Service for working with subjects"""
+
     def __init__(self, subjects_repo: BaseSubjectsRepository):
         self.subjects_repo = subjects_repo
 

@@ -84,6 +84,10 @@ async def create_new_lecture(
 async def upload_description_file_to_lecture(
     subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me
 ):
+    """
+    A function to upload a description file to a lecture.
+    """
+
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
         await service.add_description_file_to_lecture(
@@ -104,6 +108,10 @@ async def upload_description_file_to_lecture(
 async def upload_video_file_to_lecture(
     subject: CurrentSubject, number: int, file: UploadFile, service: Lectures, by: Me
 ):
+    """
+    A function to upload a video file to a lecture.
+    """
+
     lecture = await service.get_lecture_by_number(subject=subject, number=number)
     try:
         await service.add_video_file_to_lecture(
@@ -193,6 +201,10 @@ async def remove_lecture_lab(
 async def attach_file_to_lecture_lab(
     file: UploadFile, subject: CurrentSubject, number: int, service: Lectures, by: Me
 ):
+    """
+    A function to attach a file to a lecture lab.
+    """
+    
     lecture = await service.get_lecture_by_number(subject, number)
     lab = await service.get_lecture_lab(lecture)
     try:

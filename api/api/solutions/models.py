@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Literal, get_args
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from sqlalchemy import ForeignKey, Enum, UniqueConstraint
+from sqlalchemy import ForeignKey, Enum
 
 from ..database import Base
 if TYPE_CHECKING:

@@ -20,6 +20,12 @@ async_session = async_sessionmaker(engine)
 
 
 async def get_database_session() -> AsyncGenerator[AsyncSession, None]:
+    """
+    A function that retrieves a database session asynchronously.
+    This function returns an async generator that yields an async session.
+    Need for the dependency injection!!!
+    """
+
     async with async_session() as session:
         yield session
 

@@ -15,6 +15,10 @@ from .subjects.routes import subjects
 from .solutions.routes import solutions
 
 async def item_exception_handler(request: Request, exception: Exception) -> Response:
+    """
+    A coroutine that handles exceptions for specific item-related exceptions and maps them to appropriate HTTP status codes.
+    """
+    
     codes_mapping = {
         ItemNotFoundException: status.HTTP_404_NOT_FOUND,
         ItemAlreadyExistsException: status.HTTP_409_CONFLICT,
@@ -35,6 +39,9 @@ async def item_exception_handler(request: Request, exception: Exception) -> Resp
 
 
 def get_app() -> ASGIApp:
+    """
+    Function to get the ASGIApp instance for the Edubot API.
+    """
     app = FastAPI(
         title="Edubot API",
         description="Edubot API",

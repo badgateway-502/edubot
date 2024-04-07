@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """configuration settings for the API"""
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
@@ -20,4 +21,6 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """global cached settings for the API. Can be used as dependency"""
+
     return Settings()  # type: ignore

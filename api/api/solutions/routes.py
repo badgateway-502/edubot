@@ -45,6 +45,11 @@ async def add_test_solution(result: AddTestSolution, service: Solutions, lecture
 
 @solutions.get("/progress", response_model=list[ProgressSchema])
 async def get_progress(student_id: int, service: Solutions, students_service: Students, subject_service: Subjects):
+    """
+    A function to get the progress of a student by calculating the number of tests and labs passed 
+    for each subject. 
+    """
+
     student = await students_service.get_student(student_id)
     subjects = await subject_service.get_subjects()
 
