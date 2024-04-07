@@ -15,4 +15,4 @@ menu_router = Router()
 async def my_subjects_button(message: types.Message, state: FSMContext):
     await message.answer("Меню", reply_markup=keyboard_for_menu())
     await state.set_state(AFKState.logged)
-    await state.set_data({}) # полностью очищаем state.data
+    await state.set_data({'user_id': message.from_user.id})  # полностью очищаем state.data

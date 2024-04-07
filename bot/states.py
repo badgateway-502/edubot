@@ -13,11 +13,18 @@ class SubjectState(StatesGroup):
     choosing_subject = State()  # ученик выбирает предмет
     chosen_subject = State()  # ученик выбрал предмет
     choosing_lecture = State()  # ученик выбирает лекцию
-    lecture_opened = State()  # ученик выбрал лецию в том числе текущую
+    lecture_opened = State()  # ученик выбрал лецию старую
+    lecture_current_opened = State()  # ученик выбрал текущую лецию
     quiz_opened = State()  # ученик открыл тест
+
+
+class Lab(StatesGroup):
+    lab_opened = State()  # ученик хочет сдать лаб работу
 
 
 class Quiz(StatesGroup):
     variants_question = State()  # вопрос с вариантом ответов
     scalare_question = State()  # вопрос с без вариантов ответов
     moderfile_question = State()  # вопрос с пост модерацией
+    finish_quiz = State()  # учениr на стоит перде выбором закончить ли тест?
+    finished_quiz = State()  # учениr получил результат теста
